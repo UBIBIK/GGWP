@@ -6,63 +6,83 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <ImageView
-        android:layout_width="135dp"
-        android:layout_height="123dp"
-        android:layout_gravity="center"
-        android:background="@null"
-        android:src="@drawable/logo">
-    </ImageView>
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:hint="ID">
-    </EditText>
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:hint="PASSWORD">
-    </EditText>
-
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:weightSum="9">
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-        <Button
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/view4"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_weight="3"
-            android:text="로그인"
-            android:textColor="#ffffff"
-            android:background="@color/black">
-        </Button>
+            android:orientation="vertical">
 
-        <Button
-            android:id="@+id/sign_up"
-            android:layout_width="wrap_content"
+            <ImageView
+                android:layout_width="135dp"
+                android:layout_height="123dp"
+                android:layout_gravity="center"
+                android:background="@null"
+                android:src="@drawable/logo"></ImageView>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="ID"></EditText>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="PASSWORD"></EditText>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="3"
-            android:gravity="center"
-            android:text="회원가입"
-            android:textColor="#ffffff"
-            android:background="@color/black">
-        </Button>
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:weightSum="9">
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_weight="3"
-            android:text="ID/PW찾기"
-            android:textColor="#ffffff"
-            android:background="@color/black">
-        </Button>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:background="@color/black"
+                android:gravity="center"
+                android:text="로그인"
+                android:textColor="#ffffff"></Button>
 
+            <Button
+                android:id="@+id/sign_up"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:background="@color/black"
+                android:gravity="center"
+                android:text="회원가입"
+                android:textColor="#ffffff"></Button>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:background="@color/black"
+                android:gravity="center"
+                android:text="ID/PW찾기"
+                android:textColor="#ffffff"></Button>
+
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>
