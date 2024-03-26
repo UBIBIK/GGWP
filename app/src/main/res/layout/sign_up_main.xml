@@ -7,28 +7,6 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <RadioGroup
-        android:id="@+id/radioGroupRole"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="30dp">
-
-        <RadioButton
-            android:id="@+id/radioButtonGuardian"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="보호자" />
-
-        <RadioButton
-            android:id="@+id/radioButtonProtected"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="보호대상" />
-    </RadioGroup>
-
     <!-- 아이디 입력 필드 -->
     <EditText
         android:id="@+id/editTextUsername"
@@ -64,10 +42,12 @@
         android:text="회원가입"
         android:textColor="#FFFFFF"/> <!-- 글자색 변경 필요 -->
 
+    <!-- 뒤로가기 버튼 -->
     <Button
-        android:id="@+id/buttonGoBack"
+        android:id="@+id/sign_up_back"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="뒤로가기"
         android:textColor="#FFFFFF"/>
+
 </LinearLayout>
