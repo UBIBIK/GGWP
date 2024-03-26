@@ -30,6 +30,7 @@
             android:orientation="vertical">
 
             <ImageView
+                android:id="@+id/logo"
                 android:layout_width="135dp"
                 android:layout_height="123dp"
                 android:layout_gravity="center"
