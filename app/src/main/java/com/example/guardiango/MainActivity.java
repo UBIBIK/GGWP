@@ -25,10 +25,17 @@ public class MainActivity extends AppCompatActivity {
 
         Button sign_up = (Button) findViewById(R.id.sign_up);
         sign_up.setOnClickListener(new View.OnClickListener() {
-
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), sign_up_main.class);
-                startActivity(intent);
+                Intent intent_sing_up = new Intent(getApplicationContext(), sign_up_main.class);
+                startActivity(intent_sing_up);
+            }
+        });
+
+        Button find = (Button) findViewById(R.id.find_id_button);
+        find.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                Intent intent_find = new Intent(getApplicationContext(), find_id.class);
+                startActivity(intent_find);
             }
         });
     }

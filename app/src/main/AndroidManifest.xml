@@ -21,9 +21,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".sign_up_main">
 
-        </activity>
+        <activity android:name=".sign_up_main"></activity>
+
+        <activity android:name=".find_id"></activity>
     </application>
 
 </manifest>
