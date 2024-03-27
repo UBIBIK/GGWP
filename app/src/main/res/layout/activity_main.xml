@@ -6,19 +6,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <View
-        android:id="@+id/view"
-        android:layout_width="match_parent"
-        android:layout_height="70dp" />
-
     <ImageView
         android:layout_width="135dp"
         android:layout_height="123dp"
         android:layout_gravity="center"
-        android:layout_margin="20dp"
+        android:layout_marginTop="60dp"
         android:background="@null"
         android:src="@drawable/logo">
-
     </ImageView>
 
     <EditText
@@ -26,7 +20,6 @@
         android:layout_height="50dp"
         android:layout_margin="20dp"
         android:hint="ID">
-
     </EditText>
 
     <EditText
