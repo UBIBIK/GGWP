@@ -7,12 +7,29 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- 아이디 입력 필드 -->
     <EditText
         android:id="@+id/editTextUsername"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="아이디를 입력하세요."
+        android:hint="이름을 입력하세요"
+        android:inputType="textEmailAddress"
+        android:layout_marginBottom="30dp"/>
+
+    <EditText
+        android:id="@+id/editTextPhone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="12"
+        android:hint="전화번호를 입력하세요. (-제외)"
+        android:inputType="phone"
+        android:layout_marginBottom="30dp"/>
+
+    <!-- 아이디 입력 필드 -->
+    <EditText
+        android:id="@+id/editTextUserID"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="아이디를 입력하세요.(이메일)"
         android:inputType="textEmailAddress"
         android:layout_marginBottom="30dp"/>
 
@@ -40,7 +57,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="회원가입"
-        android:textColor="#FFFFFF"/> <!-- 글자색 변경 필요 -->
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/green_button"/>
 
     <!-- 뒤로가기 버튼 -->
     <Button
@@ -48,6 +67,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="뒤로가기"
-        android:textColor="#FFFFFF"/>
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/green_button"/>
 
 </LinearLayout>
