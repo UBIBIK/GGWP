@@ -25,6 +25,10 @@
         <activity android:name=".sign_up_main"></activity>
 
         <activity android:name=".find_id"></activity>
+
+        <activity android:name=".find_password"></activity>
+
+        <activity android:name=".select_find"></activity>
     </application>
 
 </manifest>

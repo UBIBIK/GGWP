@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         Button find = (Button) findViewById(R.id.find_id_button);
         find.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                Intent intent_find = new Intent(getApplicationContext(), find_id.class);
+                Intent intent_find = new Intent(getApplicationContext(), select_find.class);
                 startActivity(intent_find);
             }
         });
