@@ -40,7 +40,8 @@ public class sign_up_main extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // 이메일 확인 로직
-                String phone_number = editTextPhoneNumber.getText().toString().trim();
+                String userName = editTextUsername.getText().toString().trim();
+                String Phone_number = editTextPhoneNumber.getText().toString().trim();
                 String emailInput = editTextEmail.getText().toString().trim();
                 String password = editTextPassword.getText().toString().trim();
                 String passwordConfirm = editTextPasswordConfirm.getText().toString().trim();
@@ -57,8 +58,8 @@ public class sign_up_main extends AppCompatActivity {
                 else {
                     Toast.makeText(sign_up_main.this, "회원가입 성공!", Toast.LENGTH_SHORT).show();
 
-                    UserDTO userDTo = new UserDTO(editTextUsername.getText().toString(), editTextPhoneNumber.getText().toString(),
-                            editTextEmail.getText().toString(), editTextPassword.getText().toString());
+                    UserDTO userDTo = new UserDTO(userName, Phone_number, emailInput, password);
+                    Log.w("정보확인", userDTo.toString());
                     Gson gson = new Gson();
                     String userInfo = gson.toJson(userDTo);
 
@@ -69,7 +70,9 @@ public class sign_up_main extends AppCompatActivity {
                         @Override
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                             if (response.isSuccessful()) {
-                                Log.e("POST", "성공");
+                                Log.w("회원가입", "성공");
+                                //화면 넘어가는 로직 구현하기
+                                finish();
                             }
                         }
 
@@ -89,8 +92,7 @@ public class sign_up_main extends AppCompatActivity {
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(sign_up_main.this, MainActivity.class);
-                startActivity(intent);
+                finish();
             }
         });
     }

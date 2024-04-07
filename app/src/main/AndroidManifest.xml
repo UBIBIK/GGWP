@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <application
         android:usesCleartextTraffic="true"
         android:allowBackup="true"
@@ -30,6 +31,22 @@
         <activity android:name=".find_password"></activity>
 
         <activity android:name=".select_find"></activity>
+
+        <!--구글맵 부분-->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAB_0ZJm5BrHx1bbpOwSjmc-dXvglILKNI" />
+
+        <activity
+            android:name=".MapActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
     </application>
 
     <uses-permission android:name="android.permission.INTERNET"/>
