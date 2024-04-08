@@ -19,7 +19,7 @@ public class FirebaseServiceImpl implements FirebaseService {
     public String insertUser(User user) throws Exception {
         Firestore firestore = FirestoreClient.getFirestore();
         ApiFuture<WriteResult> apiFuture =
-                firestore.collection(COLLECTION_NAME).document(user.getEmail()).set(user);
+                firestore.collection(COLLECTION_NAME).document(user.getUser_email()).set(user);
         return apiFuture.get().getUpdateTime().toString();
     }
 
@@ -44,7 +44,7 @@ public class FirebaseServiceImpl implements FirebaseService {
     public String updateUser(User user) throws Exception {
         Firestore firestore = FirestoreClient.getFirestore();
         ApiFuture<WriteResult> apiFuture
-                = firestore.collection(COLLECTION_NAME).document(user.getEmail()).set(user);
+                = firestore.collection(COLLECTION_NAME).document(user.getUser_email()).set(user);
         return apiFuture.get().getUpdateTime().toString();
     }
 

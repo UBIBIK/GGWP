@@ -23,6 +23,10 @@ public class AndroidController {
     @PostMapping("/save-user")
     @ResponseBody
     public void saveUser(@RequestBody User user) throws Exception {
+        log.info("username={}",user.getUser_name());
+        log.info("Phone_number={}",user.getPhone_number());
+        log.info("useremail={}",user.getUser_email());
+        log.info("userPassword={}",user.getPassword());
         firebaseService.insertUser(user);
     }
 }
