@@ -22,7 +22,7 @@
         android:ems="12"
         android:maxLength="11"
         android:hint="전화번호를 입력하세요. (-제외)"
-        android:inputType="text"
+        android:inputType="phone"
         android:layout_marginBottom="30dp"/>
 
     <!-- 아이디 입력 필드 -->

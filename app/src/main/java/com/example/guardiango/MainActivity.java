@@ -23,6 +23,14 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        Button login = (Button) findViewById(R.id.login);
+        login.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                Intent intent_login = new Intent(getApplicationContext(), your_new_home.class);
+                startActivity(intent_login);
+            }
+        });
+
         Button sign_up = (Button) findViewById(R.id.sign_up);
         sign_up.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
