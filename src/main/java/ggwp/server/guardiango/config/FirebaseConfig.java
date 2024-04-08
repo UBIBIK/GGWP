@@ -6,20 +6,23 @@ import com.google.firebase.FirebaseOptions;
 import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Configuration;
 
-import java.io.FileInputStream;
+import java.io.InputStream;
 
 @Configuration
 public class FirebaseConfig {
     @PostConstruct
     public void init() {
         try {
-            FileInputStream serviceAccount = new FileInputStream("src/main/resources/serviceAccountKey.json");
+            // 파일 시스템 경로 대신 클래스패스 리소스 접근 방식을 사용
+            InputStream serviceAccount = getClass().getResourceAsStream("/serviceAccountKey.json");
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();
 
-            FirebaseApp.initializeApp(options);
+            if (FirebaseApp.getApps().isEmpty()) { //<-- check with this line
+                FirebaseApp.initializeApp(options);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
