@@ -8,9 +8,9 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public interface FirebaseService {
-    public String insertUser(User user) throws Exception;
-    public User getUserDetail(String id) throws Exception;
-    public String updateUser(User user) throws Exception;
-    public String deleteUser(String id) throws Exception;
-    public List<User> getUsers() throws ExecutionException, InterruptedException;
+    public String insertUser(User user) throws Exception; // 사용자 추가
+    public User getUserDetail(String email) throws Exception; // 사용자 정보 조회
+    public String updateUser(User user) throws Exception; // 사용자 정보 수정
+    public String deleteUser(String email) throws Exception; // 사용자 삭제
+    public List<User> getUsers() throws ExecutionException, InterruptedException; // 모든 사용자 조회
 }

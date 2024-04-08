@@ -21,9 +21,10 @@ class FirebaseServiceImplTest {
 
     @Test
     void insertUser_Test() throws Exception {
+        // 새로운 사용자 데이터 정보가 저장되는지 확인
         User user = new User();
-        user.setEmail(TEST_USER_EMAIL);
-        user.setName(TEST_USER_NAME);
+        user.setUser_email(TEST_USER_EMAIL);
+        user.setUser_name(TEST_USER_NAME);
 
         firebaseService.insertUser(user);
     }
@@ -34,16 +35,16 @@ class FirebaseServiceImplTest {
         User user = firebaseService.getUserDetail(TEST_USER_EMAIL);
 
         assertNotNull(user);
-        assertEquals(TEST_USER_EMAIL, user.getEmail());
-        System.out.println(user.getName() + ", " + user.getEmail());
+        assertEquals(TEST_USER_EMAIL, user.getUser_email());
+        System.out.println(user.getUser_name() + ", " + user.getUser_email());
     }
 
     @Test
     void updateUser_Test() throws Exception {
         // 테스트용 사용자 데이터가 업데이트되는지 확인
         User updatedUser = new User();
-        updatedUser.setEmail("test@example.com");
-        updatedUser.setName("updater");
+        updatedUser.setUser_email("test@example.com");
+        updatedUser.setUser_name("updater");
 
         String result = firebaseService.updateUser(updatedUser);
 
@@ -52,6 +53,7 @@ class FirebaseServiceImplTest {
 
     @Test
     void deleteUser_Test() throws Exception {
+        // 테스트용 사용자 데이터가 삭제되는지 확인
         String result = firebaseService.deleteUser(TEST_USER_EMAIL);
 
         assertNotNull(result);
@@ -59,7 +61,8 @@ class FirebaseServiceImplTest {
 
     @Test
     void getAllUsers() throws Exception {
+        // 모든 사용자 데이터가 조회 되는지 확인
         List<User> users = firebaseService.getUsers();
-        users.forEach(user -> System.out.println("user = " + user.getEmail() + ", email = " + user.getEmail()));
+        users.forEach(user -> System.out.println("user = " + user.getUser_email() + ", email = " + user.getUser_email()));
     }
 }

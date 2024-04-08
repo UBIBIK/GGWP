@@ -20,7 +20,7 @@ public class AndroidController {
         this.firebaseService = firebaseService;
     }
 
-    @PostMapping("/save-user")
+    @PostMapping("/save-user") // 안드로이드 스튜디오를 통해 받은 사용자 객체를 파이어베이스에 저장
     @ResponseBody
     public void saveUser(@RequestBody User user) throws Exception {
         log.info("username={}",user.getUser_name());

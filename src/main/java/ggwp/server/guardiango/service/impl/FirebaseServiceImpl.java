@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 public class FirebaseServiceImpl implements FirebaseService {
     public static final String COLLECTION_NAME = "users";
     @Override
-    public String insertUser(User user) throws Exception {
+    public String insertUser(User user) throws Exception {  // 사용자 추가
         Firestore firestore = FirestoreClient.getFirestore();
         ApiFuture<WriteResult> apiFuture =
                 firestore.collection(COLLECTION_NAME).document(user.getUser_email()).set(user);
@@ -24,7 +24,7 @@ public class FirebaseServiceImpl implements FirebaseService {
     }
 
     @Override
-    public User getUserDetail(String email) throws Exception {
+    public User getUserDetail(String email) throws Exception {  // 사용자 정보 조회
         Firestore firestore = FirestoreClient.getFirestore();
         DocumentReference documentReference =
                 firestore.collection(COLLECTION_NAME).document(email);
@@ -41,7 +41,7 @@ public class FirebaseServiceImpl implements FirebaseService {
     }
 
     @Override
-    public String updateUser(User user) throws Exception {
+    public String updateUser(User user) throws Exception { // 사용자 정보 수정
         Firestore firestore = FirestoreClient.getFirestore();
         ApiFuture<WriteResult> apiFuture
                 = firestore.collection(COLLECTION_NAME).document(user.getUser_email()).set(user);
@@ -49,15 +49,15 @@ public class FirebaseServiceImpl implements FirebaseService {
     }
 
     @Override
-    public String deleteUser(String email) throws Exception {
+    public String deleteUser(String email) throws Exception { // 사용자 삭제
         Firestore firestore = FirestoreClient.getFirestore();
         ApiFuture<WriteResult> apiFuture
                 = firestore.collection(COLLECTION_NAME).document(email).delete();
-        return "Document email: "+email+" delete";
+        return "Document email : " + email + " delete";
     }
 
     @Override
-    public List<User> getUsers() throws ExecutionException, InterruptedException {
+    public List<User> getUsers() throws ExecutionException, InterruptedException { // 모든 사용자 조회
         List<User> list = new ArrayList<>();
         Firestore firestore = FirestoreClient.getFirestore();
         ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).get();

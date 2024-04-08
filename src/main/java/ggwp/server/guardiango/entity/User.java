@@ -2,7 +2,7 @@ package ggwp.server.guardiango.entity;
 
 import lombok.Getter;
 import lombok.Setter;
-
+// 사용자 객체
 @Getter
 @Setter
 public class User {
