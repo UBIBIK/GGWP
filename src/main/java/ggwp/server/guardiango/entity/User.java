@@ -14,4 +14,11 @@ public class User {
     public User() {
 
     }
+
+    public User(String name, String phoneNumber, String email, String password) {
+        this.email = email;
+        this.password = password;
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+    }
 }
