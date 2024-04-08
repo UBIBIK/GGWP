@@ -6,19 +6,19 @@ import lombok.Setter;
 @Getter
 @Setter
 public class User {
-    private String email;
+    private String user_email;
     private String password;
-    private String phoneNumber;
-    private String name;
+    private String phone_number;
+    private String user_name;
 
     public User() {
 
     }
 
-    public User(String name, String phoneNumber, String email, String password) {
-        this.email = email;
+    public User(String user_name, String phone_number, String user_email, String password) {
+        this.user_name = user_name;
+        this.phone_number = phone_number;
+        this.user_email = user_email;
         this.password = password;
-        this.name = name;
-        this.phoneNumber = phoneNumber;
     }
 }
