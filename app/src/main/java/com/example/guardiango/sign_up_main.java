@@ -71,7 +71,6 @@ public class sign_up_main extends AppCompatActivity {
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                             if (response.isSuccessful()) {
                                 Log.w("회원가입", "성공");
-                                //화면 넘어가는 로직 구현하기
                                 finish();
                             }
                         }

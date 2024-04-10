@@ -8,4 +8,7 @@ import retrofit2.http.POST;
 public interface UserRetrofitInterface {
     @POST("save-user")
     Call<ResponseBody> saveUser(@Body UserDTO jsonUser);
+
+    @POST("/invite")
+    Call<Void> sendInvite(@Body InviteRequest inviteRequest);
 }
