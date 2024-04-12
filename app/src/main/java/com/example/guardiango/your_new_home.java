@@ -19,6 +19,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -88,6 +89,17 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        //홈에서 그룹으로 가는 버튼 구현
+        Button home_group_button = findViewById(R.id.home_group_button);
+
+        home_group_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), home_group.class);
+                startActivity(intent);
+            }
+        });
 
     }
 

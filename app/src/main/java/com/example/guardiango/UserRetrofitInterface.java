@@ -8,7 +8,4 @@ import retrofit2.http.POST;
 public interface UserRetrofitInterface {
     @POST("save-user")
     Call<ResponseBody> saveUser(@Body UserDTO jsonUser);
-
-    @POST("login")
-    Call<ResponseBody> loginUser(@Body UserDTO User);
 }
