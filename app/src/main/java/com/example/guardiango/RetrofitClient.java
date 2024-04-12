@@ -8,10 +8,10 @@ public class RetrofitClient {
     private static UserRetrofitInterface userRetrofitInterface;
 
     //외부 호스트
-    private static String baseUrl = "http://34.64.241.204:8080/";
+    //private static String baseUrl = "http://34.64.241.204:8080/";
 
     //로컬 호스트
-    //private static String baseUrl = "http://10.0.2.2:8080/";
+    private static String baseUrl = "http://10.0.2.2:8080/";
 
     private RetrofitClient() {
         retrofit2.Retrofit retrofit = new retrofit2.Retrofit.Builder()
