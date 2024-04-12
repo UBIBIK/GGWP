@@ -2,6 +2,7 @@ package ggwp.server.guardiango.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+
 // 사용자 객체
 @Getter
 @Setter
@@ -15,7 +16,7 @@ public class User {
 
     }
 
-    public User(String user_name, String phone_number, String user_email, String password) {
+    public User(String user_email, String user_name, String phone_number, String password) {
         this.user_name = user_name;
         this.phone_number = phone_number;
         this.user_email = user_email;
