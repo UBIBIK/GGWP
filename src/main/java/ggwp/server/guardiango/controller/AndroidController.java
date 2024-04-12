@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 public class AndroidController {
@@ -28,5 +30,27 @@ public class AndroidController {
         log.info("useremail={}",user.getUser_email());
         log.info("userPassword={}",user.getPassword());
         firebaseService.insertUser(user);
+    }
+
+    //로그인 확인
+    @PostMapping("/login")
+    @ResponseBody
+    public void loginUser(@RequestBody User loginUser) throws Exception {
+        List<User> userList = firebaseService.getUsers();
+
+        for (User user : userList){
+            if(user.getUser_email().equals(loginUser.getUser_email())){
+                if(user.getPassword().equals(loginUser.getPassword())){
+                    log.info("사용자 로그인: {}", user.getUser_name());
+                    return;
+                }
+            }
+            else {
+                log.info("로그인 실패 : {}",user.getUser_name());
+                return;
+            }
+        }
+
+    log.info("이메일이 존재하지 않습니다.:{}",loginUser.getUser_email());
     }
 }
