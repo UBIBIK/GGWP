@@ -12,25 +12,25 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GuardianGo"
         tools:targetApi="31">
+
         <activity
-            android:name=".MainActivity"
+            android:name=".screen.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".sign_up_main"></activity>
+        <activity android:name=".screen.sign_up_main"></activity>
 
-        <activity android:name=".find_id"></activity>
+        <activity android:name=".screen.find_id"></activity>
 
-        <activity android:name=".find_password"></activity>
+        <activity android:name=".screen.find_password"></activity>
 
-        <activity android:name=".select_find"></activity>
+        <activity android:name=".screen.select_find"></activity>
 
-        <activity android:name=".home_group"></activity>
+        <activity android:name=".screen.home_group"></activity>
 
         <!--구글맵 부분-->
         <meta-data
@@ -38,15 +38,9 @@
             android:value="AIzaSyAB_0ZJm5BrHx1bbpOwSjmc-dXvglILKNI" />
 
         <activity
-            android:name=".your_new_home"
+            android:name=".screen.your_new_home"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
-
     </application>
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>

@@ -1,7 +1,5 @@
-package com.example.guardiango;
+package com.example.guardiango.screen;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
@@ -13,6 +11,10 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.guardiango.R;
+import com.example.guardiango.entity.UserDTO;
+import com.example.guardiango.server.RetrofitClient;
+import com.example.guardiango.server.UserRetrofitInterface;
 import com.google.gson.Gson;
 
 import okhttp3.ResponseBody;

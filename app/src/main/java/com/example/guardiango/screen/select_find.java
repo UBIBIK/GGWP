@@ -1,4 +1,4 @@
-package com.example.guardiango;
+package com.example.guardiango.screen;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +7,11 @@ import android.widget.Button;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.guardiango.R;
+import com.example.guardiango.screen.MainActivity;
+import com.example.guardiango.screen.find_id;
+import com.example.guardiango.screen.find_password;
 
 public class select_find extends AppCompatActivity {
     @Override

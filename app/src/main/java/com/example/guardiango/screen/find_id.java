@@ -1,4 +1,4 @@
-package com.example.guardiango;
+package com.example.guardiango.screen;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +7,8 @@ import android.widget.Button;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.guardiango.R;
 
 public class find_id extends AppCompatActivity {
     @Override

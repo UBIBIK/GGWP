@@ -18,102 +18,87 @@
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="318dp"
                 android:layout_height="55dp"
                 android:layout_weight="1"
-                android:gravity="center"
                 android:background="@drawable/outline_text"
+                android:gravity="center"
                 android:text="현재 소속 그룹"
                 android:textSize="20dp">
 
             </TextView>
 
             <Button
+                android:id="@+id/home_group_create"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:layout_weight="4"
+                android:layout_weight="5"
                 android:background="@drawable/green_button"
                 android:hint="그룹생성">
+
+            </Button>
+
+            <Button
+                android:id="@+id/home_group_join"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_weight="5"
+                android:background="@drawable/green_button"
+                android:hint="그룹참가">
 
             </Button>
 
         </LinearLayout>
 
         <!--그룹생성 버튼을 눌렀을 때 생성-->
+        <ListView
+            android:id="@+id/groupListView"
+            android:layout_width="match_parent"
+            android:layout_height="533dp"
+            android:layout_below="@id/home_group_create"></ListView>
+
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="horizontal">
 
-            <Spinner
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_weight="1" />
-
             <Button
-                android:id="@+id/home_group_add"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_weight="3"
+                android:layout_height="100dp"
+                android:layout_gravity="bottom"
+                android:layout_marginRight="3dp"
+                android:layout_weight="1"
                 android:background="@drawable/green_button"
-                android:hint="추가">
-
-            </Button>
+                android:hint="메뉴 화면" />
 
             <Button
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_weight="3"
+                android:layout_height="100dp"
+                android:layout_gravity="bottom"
+                android:layout_marginRight="3dp"
+                android:layout_weight="1"
                 android:background="@drawable/green_button"
-                android:hint="삭제">
-
-            </Button>
+                android:hint="그룹" />
 
 
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_gravity="bottom"
+                android:layout_marginRight="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/green_button"
+                android:hint="경로 목록" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_gravity="bottom"
+                android:layout_weight="1"
+                android:background="@drawable/green_button"
+                android:hint="환경 설정" />
         </LinearLayout>
 
-
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_weight="1"
-            android:layout_gravity="bottom"
-            android:background="@drawable/green_button"
-            android:layout_marginRight="3dp"
-            android:hint="메뉴 화면" />
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_weight="1"
-            android:layout_gravity="bottom"
-            android:background="@drawable/green_button"
-            android:layout_marginRight="3dp"
-            android:hint="그룹"/>
-
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_weight="1"
-            android:layout_gravity="bottom"
-            android:background="@drawable/green_button"
-            android:layout_marginRight="3dp"
-            android:hint="경로 목록"/>
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_weight="1"
-            android:layout_gravity="bottom"
-            android:background="@drawable/green_button"
-            android:hint="환경 설정"/>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

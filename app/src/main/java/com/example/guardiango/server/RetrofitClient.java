@@ -1,4 +1,4 @@
-package com.example.guardiango;
+package com.example.guardiango.server;
 
 import retrofit2.converter.gson.GsonConverterFactory;
 

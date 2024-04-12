@@ -1,4 +1,4 @@
-package com.example.guardiango;
+package com.example.guardiango.entity;
 
 public class UserDTO {
 

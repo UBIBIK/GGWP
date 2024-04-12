@@ -1,4 +1,4 @@
-package com.example.guardiango;
+package com.example.guardiango.screen;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.guardiango.R;
 
 public class find_password extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {

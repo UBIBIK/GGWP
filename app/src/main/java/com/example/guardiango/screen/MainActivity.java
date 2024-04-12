@@ -1,9 +1,8 @@
-package com.example.guardiango;
+package com.example.guardiango.screen;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +12,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.example.guardiango.R;
+import com.example.guardiango.server.RetrofitClient;
+import com.example.guardiango.server.UserRetrofitInterface;
+import com.example.guardiango.entity.UserDTO;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -78,6 +82,14 @@ public class MainActivity extends AppCompatActivity {
         find.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Intent intent_find = new Intent(getApplicationContext(), select_find.class);
+                startActivity(intent_find);
+            }
+        });
+
+        Button test = (Button) findViewById(R.id.test_button);
+        test.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                Intent intent_find = new Intent(getApplicationContext(), your_new_home.class);
                 startActivity(intent_find);
             }
         });
