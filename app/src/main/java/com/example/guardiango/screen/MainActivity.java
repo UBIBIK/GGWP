@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,7 +15,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.guardiango.R;
+import com.example.guardiango.entity.UserInfo;
 import com.example.guardiango.server.RetrofitClient;
+import com.example.guardiango.server.SharedPreferencesHelper;
 import com.example.guardiango.server.UserRetrofitInterface;
 import com.example.guardiango.entity.UserDTO;
 
@@ -24,6 +27,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
+    private SharedPreferencesHelper sharedPreferencesHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        sharedPreferencesHelper = new SharedPreferencesHelper(this);
+
         Button login = (Button) findViewById(R.id.login);
         login.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
@@ -48,23 +54,33 @@ public class MainActivity extends AppCompatActivity {
                 String password = editPassword.getText().toString().trim();
 
                 UserDTO user = new UserDTO("","",email,password);
-                Call<ResponseBody> call = userRetrofitInterface.loginUser(user);
 
-                call.clone().enqueue(new Callback<ResponseBody>() {
+                Call<UserInfo> call = userRetrofitInterface.loginUser(user);
+
+                call.enqueue(new Callback<UserInfo>() {
                     @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (response.isSuccessful()) {
-                            Log.w("로그인","성공");
-                            //화면 넘기기
-                            Intent intent_login = new Intent(getApplicationContext(), your_new_home.class);
-                            startActivity(intent_login);
+                    public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            Log.w("로그인", "성공");
+                            UserInfo userInfo = response.body();
+                            sharedPreferencesHelper.saveUserInfo(userInfo);
+
+                            UserInfo user = sharedPreferencesHelper.getUserInfo();
+                            Log.e("유저 정보", user.getUserName());
+
+                            Toast.makeText(MainActivity.this, "로그인 성공", Toast.LENGTH_LONG).show();
+
+                            Intent intent = new Intent(MainActivity.this, your_new_home.class);
+                            startActivity(intent);
                             finish();
+                        } else {
+                            Toast.makeText(MainActivity.this, "로그인 실패", Toast.LENGTH_LONG).show();
                         }
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Log.e("로그인","실패");
+                    public void onFailure(Call<UserInfo> call, Throwable t) {
+                        Toast.makeText(MainActivity.this, "네트워크 오류", Toast.LENGTH_LONG).show();
                     }
                 });
             }
