@@ -11,6 +11,7 @@ public class User {
     private String password;
     private String phone_number;
     private String user_name;
+    private String group_key;
 
     public User() {
 

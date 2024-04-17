@@ -11,12 +11,14 @@ import java.util.Map;
 @Setter
 public class Group {
     private String groupName;
-    private String groupKey;
+    private String groupCode;
     private ArrayList<Map<String, Object>> groupMember = new ArrayList<>();
 
-    public Group(String groupMemberName, String groupKey) {
+    public Group() {}
+
+    public Group(String groupMemberName, String groupCode) {
         this.groupName = groupMemberName + "의 그룹";
-        this.groupKey = groupKey;
+        this.groupCode = groupCode;
         Map<String, Object> memberInfo = new HashMap<>();
         memberInfo.put("groupMemberName", groupMemberName);
         memberInfo.put("groupRole", "보호자");

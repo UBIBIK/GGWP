@@ -3,7 +3,9 @@ package ggwp.server.guardiango.controller;
 import ggwp.server.guardiango.entity.Group;
 import ggwp.server.guardiango.entity.Groupcode;
 import ggwp.server.guardiango.entity.User;
+import ggwp.server.guardiango.entity.UserInfo;
 import ggwp.server.guardiango.service.FirebaseService;
+import ggwp.server.guardiango.service.GroupService;
 import ggwp.server.guardiango.service.impl.GroupServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,19 +18,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @RestController
 public class AndroidController {
 
     private final FirebaseService firebaseService;
-    private final GroupServiceImpl groupServiceImpl;
+    private final GroupService groupService;
 
     @Autowired
-    public AndroidController(FirebaseService firebaseService, GroupServiceImpl groupServiceImpl) {
+    public AndroidController(FirebaseService firebaseService, GroupServiceImpl groupServiceImpl, GroupService groupService) {
         this.firebaseService = firebaseService;
-        this.groupServiceImpl = groupServiceImpl;
+        this.groupService = groupService;
     }
 
     @PostMapping("/save-user") // 안드로이드 스튜디오를 통해 받은 사용자 객체를 파이어베이스에 저장
@@ -44,33 +45,36 @@ public class AndroidController {
     //로그인 확인
     @PostMapping("/login")
     @ResponseBody
-    public void loginUser(@RequestBody User loginUser) throws Exception {
+    public ResponseEntity<UserInfo> loginUser(@RequestBody User loginUser) throws Exception {
         List<User> userList = firebaseService.getUsers();
 
-        for (User user : userList){
-            if(user.getUser_email().equals(loginUser.getUser_email())){
-                if(user.getPassword().equals(loginUser.getPassword())){
+        for (User user : userList) {
+            if (user.getUser_email().equals(loginUser.getUser_email())) {
+                if (user.getPassword().equals(loginUser.getPassword())) {
                     log.info("사용자 로그인: {}", user.getUser_name());
-                    return;
+                    UserInfo userinfo = new UserInfo(user.getGroup_key(), user.getUser_email()
+                            , user.getPhone_number(), user.getUser_name());
+                    return ResponseEntity.ok(userinfo);
                 }
-            }
-            else {
-                log.info("로그인 실패 : {}",user.getUser_name());
-                return;
+            } else {
+                log.info("로그인 실패 : {}", user.getUser_name());
+                UserInfo userinfo = new UserInfo();
+                userinfo.setStatus("실패");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(userinfo);
             }
         }
-
-    log.info("이메일이 존재하지 않습니다.:{}",loginUser.getUser_email());
+        throw new Exception("사용자를 찾을 수 없습니다.");
     }
 
     // 그룹장 이름 받아오기
     @PostMapping("/group-create")
     @ResponseBody
-    public void groupCreate(@RequestBody Group group) throws ExecutionException, InterruptedException {
+    public void groupCreate(@RequestBody Group group) throws Exception {
         Group tempGroup = new Group(group.getGroupName(), randomNumber());
         log.info("reader={}", tempGroup.getGroupName());
-        log.info("code={}", tempGroup.getGroupKey());
-        groupServiceImpl.insertGroup(tempGroup);
+        log.info("code={}", tempGroup.getGroupCode());
+        groupService.insertGroup(tempGroup);
+//        firebaseService.updateUser();
     }
 
     // 그룹참가 코드 받아오기
@@ -82,6 +86,7 @@ public class AndroidController {
 
         if (code.getGroupCode().equals(correctCode)) {
             log.info("Group join code is correct.");
+//            groupService.addGroupMember();
             return ResponseEntity.ok("그룹 참가 성공!");
         } else {
             log.error("Invalid group join code received: {}", code.getGroupCode());

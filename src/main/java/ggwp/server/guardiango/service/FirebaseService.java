@@ -14,7 +14,7 @@ public interface FirebaseService {
 
     public String updateUser(User user) throws ExecutionException, InterruptedException; // 사용자 정보 수정
 
-    public void deleteUser(String email) throws Exception; // 사용자 삭제
+    public void deleteUser(String email); // 사용자 삭제
 
     public List<User> getUsers() throws ExecutionException, InterruptedException; // 모든 사용자 조회
 }

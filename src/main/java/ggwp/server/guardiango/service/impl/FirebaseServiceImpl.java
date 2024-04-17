@@ -1,6 +1,5 @@
 package ggwp.server.guardiango.service.impl;
 
-
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
@@ -36,12 +35,9 @@ public class FirebaseServiceImpl implements FirebaseService {
                 firestore.collection(COLLECTION_NAME).document(email);
         ApiFuture<DocumentSnapshot> apiFuture = documentReference.get();
         DocumentSnapshot documentSnapshot = apiFuture.get();
-        User user = null;
         if(documentSnapshot.exists()){
-            user = documentSnapshot.toObject(User.class);
-            return user;
-        }
-        else{
+            return documentSnapshot.toObject(User.class);
+        } else {
             throw new Exception("해당하는 유저가 존재하지 않습니다.");
         }
     }
@@ -55,7 +51,7 @@ public class FirebaseServiceImpl implements FirebaseService {
 
     // 사용자 삭제
     @Override
-    public void deleteUser(String email) throws Exception {
+    public void deleteUser(String email) {
         firestore.collection(COLLECTION_NAME).document(email).delete();
     }
 
