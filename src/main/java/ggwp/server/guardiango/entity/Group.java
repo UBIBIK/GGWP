@@ -14,9 +14,11 @@ public class Group {
     private String groupKey;
     private ArrayList<Map<String, Object>> groupMember = new ArrayList<>();
 
-    public Group(String groupMemberName, String groupKey) {
+    public Group() {}
+
+    public Group(String groupMemberName, String groupCode) {
         this.groupName = groupMemberName + "의 그룹";
-        this.groupKey = groupKey;
+        this.groupKey = groupCode;
         Map<String, Object> memberInfo = new HashMap<>();
         memberInfo.put("groupMemberName", groupMemberName);
         memberInfo.put("groupRole", "보호자");
