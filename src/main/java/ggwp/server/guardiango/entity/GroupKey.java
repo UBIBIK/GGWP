@@ -10,7 +10,7 @@ public class GroupKey {
 
     public GroupKey(){}
 
-    public GroupKey(String groupCode) {
-        this.groupKey = groupCode;
+    public GroupKey(String groupKey) {
+        this.groupKey = groupKey;
     }
 }

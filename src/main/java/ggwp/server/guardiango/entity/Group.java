@@ -16,9 +16,9 @@ public class Group {
 
     public Group() {}
 
-    public Group(String groupMemberName, String groupCode) {
+    public Group(String groupMemberName, String groupKey) {
         this.groupName = groupMemberName + "의 그룹";
-        this.groupKey = groupCode;
+        this.groupKey = groupKey;
         Map<String, Object> memberInfo = new HashMap<>();
         memberInfo.put("groupMemberName", groupMemberName);
         memberInfo.put("groupRole", "보호자");
