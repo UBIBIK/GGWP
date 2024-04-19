@@ -9,5 +9,4 @@ public class GuardianGoApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(GuardianGoApplication.class, args);
 	}
-
 }

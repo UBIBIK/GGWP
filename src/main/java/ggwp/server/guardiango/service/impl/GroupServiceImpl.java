@@ -206,4 +206,16 @@ public class GroupServiceImpl implements GroupService {
             throw new Exception("해당하는 문서가 존재하지 않습니다.");
         }
     }
+
+    // 모든 그룹 조회
+    @Override
+    public List<Group> getGroups() throws ExecutionException, InterruptedException {
+        List<Group> list = new ArrayList<>();
+        ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).get();
+        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+        for (QueryDocumentSnapshot document : documents) {
+            list.add(document.toObject(Group.class));
+        }
+        return list;
+    }
 }
