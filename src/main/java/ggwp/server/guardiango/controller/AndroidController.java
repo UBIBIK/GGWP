@@ -1,7 +1,6 @@
 package ggwp.server.guardiango.controller;
 
 import ggwp.server.guardiango.entity.Group;
-import ggwp.server.guardiango.entity.GroupKey;
 import ggwp.server.guardiango.entity.User;
 import ggwp.server.guardiango.entity.UserInfo;
 import ggwp.server.guardiango.service.GroupService;
@@ -73,7 +72,7 @@ public class AndroidController {
 
         for (User user : userList) {
             if (user.getUserEmail().equals(userinfo.getUserEmail())) {
-                Group tempGroup = new Group(userinfo.getGroupKey(), randomNumber());
+                Group tempGroup = new Group(userinfo.getUserName(), randomNumber());
                 userinfo.setGroupKey(tempGroup.getGroupKey());
                 log.info("reader={}", tempGroup.getGroupName());
                 log.info("code={}", tempGroup.getGroupKey());
@@ -87,21 +86,30 @@ public class AndroidController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userinfo);
     }
 
-    // 그룹참가 코드 받아오기
+    // 그룹참가
     @PostMapping("/group-join")
     @ResponseBody
-    public ResponseEntity<String> groupJoin(@RequestBody GroupKey code) {
-        String correctCode = "1234";
-        log.info("Received group join code: {}", code.getGroupKey());
+    public ResponseEntity<Group> groupJoin(@RequestBody UserInfo userinfo, String groupKey) throws Exception {
+        List<Group> list = groupService.getGroups();
+        List<User> userList = userService.getUsers();
+        Group updateGroup;
 
-        if (code.getGroupKey().equals(correctCode)) {
-            log.info("Group join code is correct.");
-//            groupService.addGroupMember();
-            return ResponseEntity.ok("그룹 참가 성공!");
-        } else {
-            log.error("Invalid group join code received: {}", code.getGroupKey());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("올바른 그룹 코드가 아닙니다.");
+        for(Group groupList : list) {
+            if(groupList.getGroupKey().equals(groupKey)) {
+                updateGroup = groupService.addGroupMember(groupKey, userinfo);
+
+                for(User user : userList) {
+                    if (user.getUserEmail().equals(userinfo.getUserEmail())) {
+                        user.setGroupKey(updateGroup.getGroupKey());
+                        userService.updateUser(user); // user 컬렉션에 해당 groupKey 정보 업데이트
+                    }
+                }
+
+                return ResponseEntity.ok(updateGroup);
+            }
         }
+
+        return  ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
     // 난수 생성 함수

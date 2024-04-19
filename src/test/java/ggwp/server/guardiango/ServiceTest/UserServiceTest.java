@@ -54,4 +54,9 @@ class UserServiceTest {
         List<User> users = userService.getUsers();
         users.forEach(user -> System.out.println("user = " + user.getUserName() + ", email = " + user.getUserEmail()));
     }
+
+    @Test
+    void setGroupKeybyUserNameTest() throws Exception {
+        userService.setGroupKeybyUserName(TEST_USER_NAME, "asdasda");
+    }
 }

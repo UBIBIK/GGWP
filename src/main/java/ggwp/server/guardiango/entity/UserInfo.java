@@ -14,9 +14,9 @@ public class UserInfo {
 
     public UserInfo() {}
 
-    public UserInfo(String groupKey, String userId, String phoneNumber, String userName) {
+    public UserInfo(String groupKey, String userEmail, String phoneNumber, String userName) {
         this.groupKey = groupKey;
-        this.userEmail = userId;
+        this.userEmail = userEmail;
         this.phoneNumber = phoneNumber;
         this.userName = userName;
     }

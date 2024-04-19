@@ -15,4 +15,6 @@ public interface UserService {
     void deleteUser(String email); // 사용자 삭제
 
     List<User> getUsers() throws ExecutionException, InterruptedException; // 모든 사용자 조회
+
+    void setGroupKeybyUserName(String userName, String groupKey) throws Exception; // 그룹 키 정보 수정
 }

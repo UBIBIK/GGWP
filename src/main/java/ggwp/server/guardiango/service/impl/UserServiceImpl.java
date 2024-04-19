@@ -23,7 +23,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("User 객체가 null입니다.");
         }
 
-        // Firestore에서 동일한 userEmail을 가진 사용자가 있는지 확인합니다.
+        // 파이어베이스에 동일한 userEmail을 가진 사용자가 있는지 확인
         DocumentReference docRef = firestore.collection(COLLECTION_NAME).document(user.getUserEmail());
         ApiFuture<DocumentSnapshot> futureSnapshot = docRef.get();
         DocumentSnapshot documentSnapshot = futureSnapshot.get();
@@ -33,9 +33,9 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("동일한 userEmail을 가진 사용자가 이미 존재합니다.");
         }
 
-        // Firestore에 사용자 정보를 저장합니다.
+        // 사용자 정보를 저장
         ApiFuture<WriteResult> future = docRef.set(user);
-        // 성공적으로 저장되었을 때의 시간을 반환합니다.
+        // 성공적으로 저장되었을 때의 시간을 반환
         return future.get().getUpdateTime().toString();
     }
 
@@ -77,5 +77,18 @@ public class UserServiceImpl implements UserService {
             list.add(document.toObject(User.class));
         }
         return list;
+    }
+
+    // 그룹 키 정보 수정
+    @Override
+    public void setGroupKeybyUserName(String userName, String groupKey) throws Exception {
+        ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).whereEqualTo("userName", userName).get();
+        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+        if (!documents.isEmpty()) {
+            QueryDocumentSnapshot document = documents.getFirst();
+            document.getReference().update("groupKey", groupKey);
+        } else {
+            throw new Exception("해당하는 유저가 존재하지 않습니다.");
+        }
     }
 }

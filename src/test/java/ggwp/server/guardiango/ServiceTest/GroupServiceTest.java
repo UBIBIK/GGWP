@@ -1,6 +1,7 @@
 package ggwp.server.guardiango.ServiceTest;
 
 import ggwp.server.guardiango.entity.Group;
+import ggwp.server.guardiango.entity.UserInfo;
 import ggwp.server.guardiango.service.GroupService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,10 @@ public class GroupServiceTest {
     // 그룹 멤버 추가 테스트
     @Test
     public void addGroupMemberTest() throws Exception {
-        groupService.addGroupMember(TEST_GROUP_KEY, TEST_GROUP_MEMBER_NAME, "보호 대상");
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUserName(TEST_GROUP_MEMBER_NAME);
+        Group group = groupService.addGroupMember(TEST_GROUP_KEY, userInfo);
+        System.out.println(group.getGroupKey());
     }
 
     // 그룹 멤버 삭제 테스트
@@ -49,9 +53,18 @@ public class GroupServiceTest {
         groupService.deleteGroup(TEST_GROUP_NAME);
     }
 
+    @Test
+    public void getGroupByGroupCodeTest() throws Exception {
+        Group group = groupService.getGroupByGroupCode(TEST_GROUP_KEY);
+        System.out.println(group.getGroupName());
+        System.out.println(group.getGroupKey());
+    }
+
+    // 로그인 한 유저의 userInfo를 통해 그룹 정보를 불러와 그룹 멤버 초대 시에 유저 객체에 groupKey 업데이트
+
     // 그룹 코드로 모든 그룹 멤버 이름 조회 테스트
     @Test
-    void getGroupMemberByGroupCodeTest() throws Exception {
+    void getGroupMemberByGroupKeyTest() throws Exception {
         List<String> groupMemberNames = groupService.getGroupMemberByGroupCode(TEST_GROUP_KEY);
 
         for (String name : groupMemberNames) {
@@ -61,7 +74,7 @@ public class GroupServiceTest {
 
     // 그룹 코드로 그룹 이름 조회 테스트
     @Test
-    void getGroupNameByGroupCodeTest() throws Exception {
+    void getGroupNameByGroupKeyTest() throws Exception {
         String groupName = groupService.getGroupNameByGroupCode(TEST_GROUP_KEY);
         System.out.println(groupName);
     }
