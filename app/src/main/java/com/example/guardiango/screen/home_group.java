@@ -56,7 +56,7 @@ public class home_group extends AppCompatActivity {
 
         //그룹참가 버튼 클릭
         Button joinButton = findViewById(R.id.home_group_join);
-        //TODO joinButton.setOnClickListener(v -> groupJoin());
+        joinButton.setOnClickListener(v -> groupJoin());
 
         //리스트 클릭
         groupListView.setOnItemClickListener((parent, view, position, id) -> showGroupDetailDialog(groupList.get(position)));
@@ -149,8 +149,7 @@ public class home_group extends AppCompatActivity {
 
 
 
-    //TODO 그룹참가 이벤트
-    /*private void groupJoin() {
+    private void groupJoin() {
         // 이미 생성된 그룹이 있는지 확인
         if (!groupList.isEmpty()) {
             Toast.makeText(home_group.this, "이미 생성된 그룹이 있습니다. 추가 그룹 생성이 제한됩니다.", Toast.LENGTH_LONG).show();
@@ -166,32 +165,39 @@ public class home_group extends AppCompatActivity {
         builder.setView(input);
 
         builder.setPositiveButton("확인", (dialog, which) -> {
-            String groupCode = input.getText().toString();
-            if (!groupCode.isEmpty()) {
+            String groupKey = input.getText().toString();
+            if (!groupKey.isEmpty()) {
+                // SharedPreferences에서 사용자 정보 가져오기
+                sharedPreferencesHelper = new SharedPreferencesHelper(this);
+                UserInfo user = sharedPreferencesHelper.getUserInfo();
+
                 RetrofitClient retrofitClient = RetrofitClient.getInstance();
                 UserRetrofitInterface Interface = retrofitClient.getUserRetrofitInterface();
 
-                Groupcode Code = new Groupcode(groupCode);
                 Gson gson = new Gson();
-                String json = gson.toJson(Code);
+                String json = gson.toJson(user);
                 Log.d("Group join", "Sending code: " + json);
 
-                Call<ResponseBody> call = Interface.groupjoin(Code);
-                call.clone().enqueue(new Callback<ResponseBody>() {
+                Call<Group> call = Interface.groupjoin(user, groupKey);
+                call.clone().enqueue(new Callback<Group>() {
                     @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        try {
-                            String message = response.body().string();
-                            Toast.makeText(home_group.this, message, Toast.LENGTH_LONG).show();
-                            Log.w("그룹참가", message);
-                        } catch (Exception e) {
-                            Log.e("그룹참가", "응답 파싱 실패", e);
+                    public void onResponse(Call<Group> call, Response<Group> response) {
+                        if(response.isSuccessful()) {
+                            //로그인 정보에 키값 삽입
+                            user.setGroupKey(response.body().getGroupKey());
+                            sharedPreferencesHelper.saveUserInfo(user);
+
+                            // 리스트에 추가
+                            String groupName = response.body().getGroupName();
+                            groupList.add(groupName);
+                            adapter.notifyDataSetChanged();
+                            Toast.makeText(home_group.this, "그룹이 생성되었습니다.", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Toast.makeText(home_group.this, "그룹 참가 요청 실패: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    public void onFailure(Call<Group> call, Throwable t) {
+                        Toast.makeText(home_group.this, "그룹 참가 요청 실패",Toast.LENGTH_LONG).show();
                         Log.e("그룹참가", "실패", t);
                     }
                 });
@@ -200,7 +206,7 @@ public class home_group extends AppCompatActivity {
 
         builder.setNegativeButton("취소", (dialog, which) -> dialog.cancel());
         builder.show();
-    }*/
+    }
 
     //TODO:리스트 클릭 이벤트 데이터베이스에서 불러오기 필요함
     private void showGroupDetailDialog(String groupName) {

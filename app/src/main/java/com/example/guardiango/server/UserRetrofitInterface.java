@@ -19,8 +19,8 @@ public interface UserRetrofitInterface {
     @POST("group-create")
     Call<UserInfo> groupCreate(@Body UserInfo user);
 
-    //@POST("group-join")
-    //Call<ResponseBody> groupjoin(@Body Groupcode groupCode);
+    @POST("group-join")
+    Call<Group> groupjoin(@Body UserInfo user, String key);
 
     @POST("group-exist")
     Call<Group> getUserGroups(@Body UserInfo user);
