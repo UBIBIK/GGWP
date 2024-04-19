@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @RestController
@@ -47,7 +48,11 @@ public class AndroidController {
     public ResponseEntity<UserInfo> loginUser(@RequestBody User loginUser) throws Exception {
         List<User> userList = userService.getUsers();
 
+        log.info("입력받은 이메일 = {}",loginUser.getUserEmail());
+        log.info("입력받은 비밀번호 = {}",loginUser.getPassword());
+
         for (User user : userList) {
+            log.info("데이터베이스 이메일 = {}", user.getUserEmail());
             if (user.getUserEmail().equals(loginUser.getUserEmail())) {
                 if (user.getPassword().equals(loginUser.getPassword())) {
                     log.info("사용자 로그인: {}", user.getUserName());
@@ -55,11 +60,6 @@ public class AndroidController {
                             , user.getPhoneNumber(), user.getUserName());
                     return ResponseEntity.ok(userinfo);
                 }
-            } else {
-                log.info("로그인 실패 : {}", user.getUserName());
-                UserInfo userinfo = new UserInfo();
-                userinfo.setStatus("실패");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(userinfo);
             }
         }
         throw new Exception("사용자를 찾을 수 없습니다.");
@@ -73,7 +73,7 @@ public class AndroidController {
 
         for (User user : userList) {
             if (user.getUserEmail().equals(userinfo.getUserEmail())) {
-                Group tempGroup = new Group(userinfo.getGroupKey(), randomNumber());
+                Group tempGroup = new Group(userinfo.getUserName(), randomNumber());
                 userinfo.setGroupKey(tempGroup.getGroupKey());
                 log.info("reader={}", tempGroup.getGroupName());
                 log.info("code={}", tempGroup.getGroupKey());
@@ -102,6 +102,20 @@ public class AndroidController {
             log.error("Invalid group join code received: {}", code.getGroupKey());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("올바른 그룹 코드가 아닙니다.");
         }
+    }
+
+    // 그룹 존재 여부 확인
+    @PostMapping("/group-exist")
+    @ResponseBody
+    public ResponseEntity<Group> groupJoin(@RequestBody UserInfo user) throws ExecutionException, InterruptedException {
+        List<Group> list = groupService.getGroups();
+
+        for(Group groupList : list) {
+            if(groupList.getGroupKey().equals(user.getGroupKey())) {
+                return ResponseEntity.ok(groupList);
+            }
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
     // 난수 생성 함수

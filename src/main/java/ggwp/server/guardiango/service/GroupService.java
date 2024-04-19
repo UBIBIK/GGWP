@@ -3,6 +3,7 @@ package ggwp.server.guardiango.service;
 import ggwp.server.guardiango.entity.Group;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public interface GroupService {
     String insertGroup(Group group) throws Exception;     // 그룹 추가
@@ -18,4 +19,6 @@ public interface GroupService {
     List<String> getGroupMemberByGroupCode(String groupName) throws Exception; // 그룹 코드로 그룹원 조회
     
     String getGroupNameByGroupCode(String groupCode) throws Exception; // 그룹 코드로 그룹 이름 조회
+
+    List<Group> getGroups() throws ExecutionException, InterruptedException; // 모든 사용자 조회
 }
