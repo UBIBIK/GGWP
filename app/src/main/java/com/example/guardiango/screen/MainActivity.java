@@ -56,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
                 UserDTO user = new UserDTO("","",email,password);
 
                 Call<UserInfo> call = userRetrofitInterface.loginUser(user);
+                Log.w("로그인 - 이메일 입력", email);
+                Log.w("로그인 - 비밀번호 입력", password);
 
                 call.enqueue(new Callback<UserInfo>() {
                     @Override

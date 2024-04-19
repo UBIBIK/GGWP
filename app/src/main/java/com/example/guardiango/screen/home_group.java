@@ -14,8 +14,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.guardiango.R;
-import com.example.guardiango.entity.Groupcode;
-import com.example.guardiango.entity.Groupcreate;
+import com.example.guardiango.entity.Group;
 import com.example.guardiango.entity.UserInfo;
 import com.example.guardiango.server.RetrofitClient;
 import com.example.guardiango.server.SharedPreferencesHelper;
@@ -24,7 +23,7 @@ import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -37,6 +36,7 @@ public class home_group extends AppCompatActivity {
     ListView groupListView;
     ArrayList<String> groupList = new ArrayList<>();
     ArrayAdapter<String> adapter;
+    Group group;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -56,7 +56,7 @@ public class home_group extends AppCompatActivity {
 
         //그룹참가 버튼 클릭
         Button joinButton = findViewById(R.id.home_group_join);
-        joinButton.setOnClickListener(v -> groupJoin());
+        //TODO joinButton.setOnClickListener(v -> groupJoin());
 
         //리스트 클릭
         groupListView.setOnItemClickListener((parent, view, position, id) -> showGroupDetailDialog(groupList.get(position)));
@@ -67,34 +67,32 @@ public class home_group extends AppCompatActivity {
     private void loadUserGroups() {
         sharedPreferencesHelper = new SharedPreferencesHelper(this);
         UserInfo user = sharedPreferencesHelper.getUserInfo();
-        String userKey = user.getGroupKey();
-        if(userKey == null) {return;}
+        String userGroupKey = user.getGroupKey();
+        if(userGroupKey == null) {
+            Toast.makeText(home_group.this, "그룹이 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         RetrofitClient retrofitClient = RetrofitClient.getInstance();
-        UserRetrofitInterface loadUserGroups = retrofitClient.getUserRetrofitInterface();
+        UserRetrofitInterface loadUserGroups = RetrofitClient.getUserRetrofitInterface();
 
-        Call<ResponseBody> call = loadUserGroups.getUserGroups(userKey);
-        call.enqueue(new Callback<ResponseBody>() {
+        Call<Group> call = loadUserGroups.getUserGroups(user);
+        call.enqueue(new Callback<Group>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            public void onResponse(Call<Group> call, Response<Group> response) {
                 if (response.isSuccessful()) {
-                    String groups = null;
-                    try {
-                        groups = response.body().string();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                    group = response.body();
                     groupList.clear();
-                    groupList.add(groups);
+                    groupList.add(group.getGroupName());
                     adapter.notifyDataSetChanged();
-                    Toast.makeText(home_group.this, "그룹이 존재합니다..", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(home_group.this, "그룹이 존재합니다.", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(home_group.this, "그룹이 없습니다.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(home_group.this, "그룹을 찾는데 실패했습니다.", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            public void onFailure(Call<Group> call, Throwable t) {
                 Toast.makeText(home_group.this, "네트워크 문제로 그룹 정보를 불러오는데 실패했습니다: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
@@ -111,43 +109,38 @@ public class home_group extends AppCompatActivity {
         // SharedPreferences에서 사용자 정보 가져오기
         sharedPreferencesHelper = new SharedPreferencesHelper(this);
         UserInfo user = sharedPreferencesHelper.getUserInfo();
-        Groupcreate groupcreate = new Groupcreate(user.getUserId());
 
         Gson gson = new Gson();
-        String json = gson.toJson(groupcreate);
+        String json = gson.toJson(user);
         Log.d("Group Create", "Sending JSON: " + json);
 
         // 서버에 그룹 생성 요청
         RetrofitClient retrofitClient = RetrofitClient.getInstance();
         UserRetrofitInterface Interface = retrofitClient.getUserRetrofitInterface();
 
-        Call<ResponseBody> call = Interface.groupCreate(groupcreate);
-        call.clone().enqueue(new Callback<ResponseBody>() {
+        Call<UserInfo> call = Interface.groupCreate(user);
+        call.clone().enqueue(new Callback<UserInfo>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String groupKey = null;
-                    try {
-                        groupKey = response.body().string();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+            public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
+                if (response.isSuccessful()) {
+                    UserInfo updatedUser = response.body();
+                    if (updatedUser != null) {
+                        sharedPreferencesHelper.saveUserInfo(updatedUser);
+
+                        // 리스트에 추가
+                        String userName = updatedUser.getUserName();
+                        groupList.add(userName + "님의 그룹");
+                        adapter.notifyDataSetChanged();
+                        Toast.makeText(home_group.this, userName + "님의 그룹이 생성되었습니다.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.e("그룹생성", "응답은 성공이나 유저 정보가 누락됨");
+                        Toast.makeText(home_group.this, "유저 정보를 받지 못했습니다.", Toast.LENGTH_SHORT).show();
                     }
-                    Log.w("그룹생성", "성공, 그룹 키: " + groupKey);
-
-                    // 유저 로그인 정보에 그룹 키 값도 저장
-                    user.setGroupKey(groupKey);
-                    sharedPreferencesHelper.saveUserInfo(user);
-
-                    // 리스트에 추가
-                    String userName = user.getUserName();
-                    groupList.add(userName + "님의 그룹");
-                    adapter.notifyDataSetChanged();
-                    Toast.makeText(home_group.this, userName + "님의 그룹이 생성되었습니다.", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            public void onFailure(Call<UserInfo> call, Throwable t) {
                 Log.e("그룹생성", "네트워크 실패", t);
                 Toast.makeText(home_group.this, "네트워크 오류로 그룹 생성 실패: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
@@ -156,8 +149,8 @@ public class home_group extends AppCompatActivity {
 
 
 
-    //그룹참가 이벤트
-    private void groupJoin() {
+    //TODO 그룹참가 이벤트
+    /*private void groupJoin() {
         // 이미 생성된 그룹이 있는지 확인
         if (!groupList.isEmpty()) {
             Toast.makeText(home_group.this, "이미 생성된 그룹이 있습니다. 추가 그룹 생성이 제한됩니다.", Toast.LENGTH_LONG).show();
@@ -207,7 +200,7 @@ public class home_group extends AppCompatActivity {
 
         builder.setNegativeButton("취소", (dialog, which) -> dialog.cancel());
         builder.show();
-    }
+    }*/
 
     //TODO:리스트 클릭 이벤트 데이터베이스에서 불러오기 필요함
     private void showGroupDetailDialog(String groupName) {

@@ -2,57 +2,56 @@ package com.example.guardiango.entity;
 
 public class UserDTO {
 
-    private String user_name;
-    private String phone_number;
-    private String user_email;
+    private String userEmail;
     private String password;
+    private String phoneNumber;
+    private String userName;
+    private String groupKey;
 
-    public UserDTO(String user_name, String phone_number, String user_email, String password) {
-        this.user_name = user_name;
-        this.phone_number = phone_number;
-        this.user_email = user_email;
+    public UserDTO(String userName, String phoneNumber, String userEmail, String password) {
+        this.userName = userName;
+        this.phoneNumber = phoneNumber;
+        this.userEmail = userEmail;
         this.password = password;
     }
 
-    public String getUser_name() {
-        return user_name;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setUser_name(String user_name) {
-        this.user_name = user_name;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
-    public String getPhone_number() {
-        return phone_number;
-    }
-
-    public void setPhone_number(String Phone_number) {
-        this.phone_number = Phone_number;
-    }
-
-    public String getUser_email() {
-        return user_email;
-    }
-
-    public void setUser_email(String user_email) {
-        this.user_email = user_email;
-    }
-
-    public String getPassphrase() {
+    public String getPassword() {
         return password;
     }
 
-    public void setPassphrase(String passphrase) {
-        this.password = passphrase;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    @Override
-    public String toString() {
-        return "UserDTO{" +
-                "user_name='" + user_name + '\'' +
-                ", Phone_number='" + phone_number + '\'' +
-                ", user_email='" + user_email + '\'' +
-                ", password='" + password + '\'' +
-                '}';
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
+
+    public String getGroupKey() {
+        return groupKey;
+    }
+
+    public void setGroupKey(String groupKey) {
+        this.groupKey = groupKey;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }

@@ -3,14 +3,13 @@ package com.example.guardiango.entity;
 public class UserInfo {
     private String status;
     private String groupKey;
-    private String userId;
+    private String userEmail;
     private String phoneNumber;
     private String userName;
-    //TODO: 유저정보 저장 필드 추가하기
 
-    public UserInfo(String groupKey, String userId, String phoneNumber, String userName) {
+    public UserInfo(String groupKey, String userEmail, String phoneNumber, String userName) {
         this.groupKey = groupKey;
-        this.userId = userId;
+        this.userEmail = userEmail;
         this.phoneNumber = phoneNumber;
         this.userName = userName;
     }
@@ -23,12 +22,12 @@ public class UserInfo {
         this.groupKey = groupKey;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getUserEmail() {
+        return userEmail;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
     }
 
     public String getPhoneNumber() {
