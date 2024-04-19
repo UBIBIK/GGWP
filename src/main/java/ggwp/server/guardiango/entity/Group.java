@@ -13,13 +13,13 @@ public class Group {
     private String groupName;
     private String groupKey;
     private ArrayList<Map<String, Object>> groupMember = new ArrayList<>();
+    private Map<String, Object> memberInfo = new HashMap<>();
 
     public Group() {}
 
     public Group(String groupMemberName, String groupKey) {
         this.groupName = groupMemberName + "의 그룹";
         this.groupKey = groupKey;
-        Map<String, Object> memberInfo = new HashMap<>();
         memberInfo.put("groupMemberName", groupMemberName);
         memberInfo.put("groupRole", "보호자");
         this.groupMember.add(memberInfo);

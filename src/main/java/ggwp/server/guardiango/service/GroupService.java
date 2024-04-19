@@ -25,5 +25,4 @@ public interface GroupService {
     
     String getGroupNameByGroupCode(String groupCode) throws Exception; // 그룹 코드로 그룹 이름 조회
 
-    List<Group> getGroups() throws ExecutionException, InterruptedException; // 모든 사용자 조회
 }
