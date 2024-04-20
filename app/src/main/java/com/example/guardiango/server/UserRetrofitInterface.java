@@ -17,11 +17,14 @@ public interface UserRetrofitInterface {
     Call<UserInfo> loginUser(@Body UserDTO userDTO);
 
     @POST("group-create")
-    Call<UserInfo> groupCreate(@Body UserInfo user);
+    Call<Group> groupCreate(@Body UserInfo user);
 
     @POST("group-join")
-    Call<Group> groupjoin(@Body UserInfo user, String key);
+    Call<Group> groupJoin(@Body UserInfo user);
 
     @POST("group-exist")
     Call<Group> getUserGroups(@Body UserInfo user);
+
+    @POST("group-delete")
+    Call<ResponseBody> groupDelete(@Body UserInfo user);
 }

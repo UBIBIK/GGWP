@@ -17,11 +17,10 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.guardiango.R;
 import com.example.guardiango.entity.UserInfo;
 import com.example.guardiango.server.RetrofitClient;
-import com.example.guardiango.server.SharedPreferencesHelper;
+import com.example.guardiango.entity.SharedPreferencesHelper;
 import com.example.guardiango.server.UserRetrofitInterface;
 import com.example.guardiango.entity.UserDTO;
 
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

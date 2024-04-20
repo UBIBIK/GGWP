@@ -7,6 +7,7 @@ import java.util.Map;
 public class Group {
     private String groupName;
     private String groupKey;
+    private String groupMaster;
     private ArrayList<Map<String, Object>> groupMember = new ArrayList<>();
 
     public Group() {}
@@ -42,5 +43,13 @@ public class Group {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public String getGroupMaster() {
+        return groupMaster;
+    }
+
+    public void setGroupMaster(String groupMaster) {
+        this.groupMaster = groupMaster;
     }
 }

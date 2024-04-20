@@ -1,9 +1,8 @@
-package com.example.guardiango.server;
+package com.example.guardiango.entity;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.example.guardiango.entity.UserInfo;
 import com.google.gson.Gson;
 
 public class SharedPreferencesHelper {

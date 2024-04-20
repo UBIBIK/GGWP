@@ -54,7 +54,7 @@
         <ListView
             android:id="@+id/groupListView"
             android:layout_width="match_parent"
-            android:layout_height="533dp"
+            android:layout_height="524dp"
             android:layout_below="@id/home_group_create"></ListView>
 
         <LinearLayout
