@@ -15,7 +15,7 @@ public interface GroupService {
 
     String updateGroup(Group group) throws Exception; // 그룹 정보 수정
 
-    String deleteGroup(String groupName) throws Exception; // 그룹 이름으로 그룹 삭제
+    void deleteGroup(UserInfo user) throws Exception; // 그룹 삭제
 
     List<Group> getGroups() throws ExecutionException, InterruptedException; // 모든 그룹 조회
     

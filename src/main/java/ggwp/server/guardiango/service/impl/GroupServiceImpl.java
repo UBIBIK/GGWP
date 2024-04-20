@@ -4,6 +4,7 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import ggwp.server.guardiango.entity.Group;
+import ggwp.server.guardiango.entity.User;
 import ggwp.server.guardiango.entity.UserInfo;
 import ggwp.server.guardiango.service.GroupService;
 import ggwp.server.guardiango.service.UserService;
@@ -111,34 +112,35 @@ public class GroupServiceImpl implements GroupService {
         return future.get().getUpdateTime().toString();
     }
 
-    // 그룹 이름으로 그룹 삭제
-    @Override
-    public String deleteGroup(String groupName) throws Exception {
-        // 그룹 이름이 Firestore에 존재하는지 확인합니다.
-        DocumentReference groupDocRef = firestore.collection(COLLECTION_NAME).document(groupName);
-        ApiFuture<DocumentSnapshot> future = groupDocRef.get();
-        DocumentSnapshot document = future.get();
+    public void deleteGroup(UserInfo user) throws Exception {
+        // 그룹 이름이 Firestore에 존재하는지 확인
+        Query groupQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", user.getGroupKey());
+        ApiFuture<QuerySnapshot> querySnapshot = groupQuery.get();
 
-        if (document.exists()) {
-            Group group = document.toObject(Group.class);
-            String groupKey = group != null ? group.getGroupKey() : null;
-
-            // User 컬렉션에서 groupCode와 일치하는 모든 문서를 검색
-            ApiFuture<QuerySnapshot> userFuture = firestore.collection("Users").whereEqualTo("groupKey", groupKey).get();
-            List<QueryDocumentSnapshot> userDocuments = userFuture.get().getDocuments();
-
-            // 일치하는 모든 사용자의 groupCode 필드를 삭제
-            for (QueryDocumentSnapshot userDocument : userDocuments) {
-                userDocument.getReference().update("groupKey", FieldValue.delete());
-            }
-
-            // 그룹을 삭제
-            groupDocRef.delete();
-        } else {
+        if (querySnapshot.get().getDocuments().isEmpty()) {
             throw new Exception("삭제하려는 그룹이 존재하지 않습니다.");
         }
-        return groupName;
+
+        for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+            if (Objects.requireNonNull(document.getString("groupMaster")).equals(user.getUserEmail())) {
+                String groupKey = document.getString("groupKey");
+
+                List<User> userList = userService.getUsers();
+                for (User findUser : userList) {
+                    if (findUser.getGroupKey() != null && findUser.getGroupKey().equals(groupKey)) {
+                        findUser.setGroupKey(null);
+                        userService.updateUser(findUser);
+                    }
+                }
+
+                // 그룹을 삭제
+                document.getReference().delete();
+            } else {
+                throw new Exception("해당 그룹 마스터의 이메일이 일치하지 않습니다.");
+            }
+        }
     }
+
 
     // 모든 그룹 조회
     @Override

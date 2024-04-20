@@ -67,36 +67,42 @@ public class AndroidController {
     // 그룹을 만드는 유저의 정보 받아오기
     @PostMapping("/group-create")
     @ResponseBody
-    public ResponseEntity<UserInfo> groupCreate(@RequestBody UserInfo userinfo) throws Exception {
+    public ResponseEntity<Group> groupCreate(@RequestBody UserInfo userinfo) throws Exception {
         List<User> userList = userService.getUsers();
+        Group tempGroup = null;
 
         for (User user : userList) {
             if (user.getUserEmail().equals(userinfo.getUserEmail())) {
-                Group tempGroup = new Group(userinfo.getUserName(), randomNumber());
+                tempGroup = new Group(userinfo.getUserName(), randomNumber());
+                tempGroup.setGroupMaster(user.getUserEmail());
                 userinfo.setGroupKey(tempGroup.getGroupKey());
                 log.info("reader={}", tempGroup.getGroupName());
                 log.info("code={}", tempGroup.getGroupKey());
                 groupService.insertGroup(tempGroup);
                 user.setGroupKey(userinfo.getGroupKey());
                 userService.updateUser(user); // user 컬렉션에 해당 groupKey 정보 업데이트
-                return ResponseEntity.ok(userinfo);
+                return ResponseEntity.ok(tempGroup);
             }
         }
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userinfo);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(tempGroup);
     }
 
     // 그룹참가
     @PostMapping("/group-join")
     @ResponseBody
-    public ResponseEntity<Group> groupJoin(@RequestBody UserInfo userinfo, String groupKey) throws Exception {
+    public ResponseEntity<Group> groupJoin(@RequestBody UserInfo userinfo) throws Exception {
         List<Group> list = groupService.getGroups();
         List<User> userList = userService.getUsers();
         Group updateGroup;
 
+        log.info("그룹 참가 유저 이메일 = {}",userinfo.getUserEmail());
+        log.info("받은 그룹 키 = {}", userinfo.getGroupKey());
+
         for(Group groupList : list) {
-            if(groupList.getGroupKey().equals(groupKey)) {
-                updateGroup = groupService.addGroupMember(groupKey, userinfo);
+            log.info("데이터베이스 그룹키 = {}", groupList.getGroupKey());
+            if(groupList.getGroupKey().equals(userinfo.getGroupKey())) {
+                updateGroup = groupService.addGroupMember(userinfo.getGroupKey(), userinfo);
 
                 for(User user : userList) {
                     if (user.getUserEmail().equals(userinfo.getUserEmail())) {
@@ -115,7 +121,7 @@ public class AndroidController {
     // 그룹 존재 여부 확인
     @PostMapping("/group-exist")
     @ResponseBody
-    public ResponseEntity<Group> groupJoin(@RequestBody UserInfo user) throws ExecutionException, InterruptedException {
+    public ResponseEntity<Group> getUserGroups(@RequestBody UserInfo user) throws ExecutionException, InterruptedException {
         List<Group> list = groupService.getGroups();
 
         for(Group groupList : list) {
@@ -135,5 +141,12 @@ public class AndroidController {
             result.append(characters.charAt(random.nextInt(characters.length())));
         }
         return result.toString();
+    }
+
+    // 그룹 삭제
+    @PostMapping("/group-delete")
+    @ResponseBody
+    public void groupDelete(@RequestBody UserInfo user) throws Exception {
+        groupService.deleteGroup(user);
     }
 }

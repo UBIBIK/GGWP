@@ -12,6 +12,7 @@ import java.util.Map;
 public class Group {
     private String groupName;
     private String groupKey;
+    private String groupMaster;
     private ArrayList<Map<String, Object>> groupMember = new ArrayList<>();
     private Map<String, Object> memberInfo = new HashMap<>();
 

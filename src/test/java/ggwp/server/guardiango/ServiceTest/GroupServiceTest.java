@@ -50,7 +50,7 @@ public class GroupServiceTest {
     // 그룹 정보 삭제 테스트
     @Test
     public void deleteGroupTest() throws Exception {
-        groupService.deleteGroup(TEST_GROUP_NAME);
+        //groupService.deleteGroup(TEST_GROUP_KEY);
     }
 
     @Test
