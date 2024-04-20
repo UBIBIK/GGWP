@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public interface GroupService {
-    String insertGroup(Group group) throws Exception;     // 그룹 추가
+    String insertGroup(Group group, UserInfo user) throws ExecutionException, InterruptedException;     // 그룹 추가
 
     Group addGroupMember(String groupKey, UserInfo user) throws Exception; // 그룹 멤버 추가
 
-    String deleteGroupMember(String groupName, String groupMemberName) throws Exception; // 그룹 멤버 정보 삭제
+    String deleteGroupMember(String deleteUserName, UserInfo user) throws Exception; // 그룹 멤버 정보 삭제
 
     String updateGroup(Group group) throws Exception; // 그룹 정보 수정
 

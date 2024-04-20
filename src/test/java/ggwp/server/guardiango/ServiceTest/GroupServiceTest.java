@@ -11,18 +11,21 @@ import java.util.List;
 
 @SpringBootTest
 public class GroupServiceTest {
-    private static final String TEST_GROUP_NAME = "test의 그룹";
+    private static final String TEST_GROUP_NAME = "test1";
+    private static final String TEST_GROUP_MASTER = "test1@example.com";
     private static final String TEST_GROUP_MEMBER_NAME = "test2";
     private static final String TEST_GROUP_KEY = "09bokfesd81vcc60";
 
     @Autowired
     private GroupService groupService;
     
-    // 그룹 정보 추가 테스트
+    // 그룹 추가 테스트
     @Test
     public void insertGroupTest() throws Exception {
         Group group = new Group(TEST_GROUP_NAME, TEST_GROUP_KEY);
-        groupService.insertGroup(group);
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUserEmail(TEST_GROUP_MASTER);
+        groupService.insertGroup(group, userInfo);
     }
 
     // 그룹 멤버 추가 테스트
@@ -37,20 +40,25 @@ public class GroupServiceTest {
     // 그룹 멤버 삭제 테스트
     @Test
     public void deleteGroupMemberTest() throws Exception {
-        groupService.deleteGroupMember(TEST_GROUP_NAME+"의 그룹", TEST_GROUP_MEMBER_NAME);
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUserEmail(TEST_GROUP_MASTER);
+        groupService.deleteGroupMember(TEST_GROUP_MEMBER_NAME, userInfo);
     }
 
-    // 그룹 정보 수정 테스트
+    // 그룹 수정 테스트
     @Test
     public void updateGroup() throws Exception {
-        Group updateGroup = new Group(TEST_GROUP_NAME, "k4p8usof9v312lht");
+        Group updateGroup = new Group(TEST_GROUP_NAME, "09bokfesd81vcc60");
         groupService.updateGroup(updateGroup);
     }
 
-    // 그룹 정보 삭제 테스트
+    // 그룹 삭제 테스트
     @Test
     public void deleteGroupTest() throws Exception {
-        //groupService.deleteGroup(TEST_GROUP_KEY);
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUserEmail(TEST_GROUP_MASTER);
+        userInfo.setGroupKey(TEST_GROUP_KEY);
+        groupService.deleteGroup(userInfo);
     }
 
     @Test
@@ -59,8 +67,6 @@ public class GroupServiceTest {
         System.out.println(group.getGroupName());
         System.out.println(group.getGroupKey());
     }
-
-    // 로그인 한 유저의 userInfo를 통해 그룹 정보를 불러와 그룹 멤버 초대 시에 유저 객체에 groupKey 업데이트
 
     // 그룹 코드로 모든 그룹 멤버 이름 조회 테스트
     @Test

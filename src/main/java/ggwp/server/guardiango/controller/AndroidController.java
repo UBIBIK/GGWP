@@ -78,7 +78,7 @@ public class AndroidController {
                 userinfo.setGroupKey(tempGroup.getGroupKey());
                 log.info("reader={}", tempGroup.getGroupName());
                 log.info("code={}", tempGroup.getGroupKey());
-                groupService.insertGroup(tempGroup);
+                groupService.insertGroup(tempGroup, userinfo);
                 user.setGroupKey(userinfo.getGroupKey());
                 userService.updateUser(user); // user 컬렉션에 해당 groupKey 정보 업데이트
                 return ResponseEntity.ok(tempGroup);
