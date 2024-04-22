@@ -14,8 +14,8 @@ class UserServiceTest {
     @Autowired
     private UserService userService;
 
-    private static final String TEST_USER_EMAIL = "test@example.com";
-    private static final String TEST_USER_NAME = "testUser";
+    private static final String TEST_USER_EMAIL = "test2@example.com";
+    private static final String TEST_USER_NAME = "test2";
 
     @Test
     void insertUser_Test() throws Exception {
