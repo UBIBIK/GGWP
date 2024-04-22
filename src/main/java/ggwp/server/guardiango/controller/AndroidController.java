@@ -1,6 +1,7 @@
 package ggwp.server.guardiango.controller;
 
 import ggwp.server.guardiango.entity.Group;
+import ggwp.server.guardiango.entity.LocationData;
 import ggwp.server.guardiango.entity.User;
 import ggwp.server.guardiango.entity.UserInfo;
 import ggwp.server.guardiango.service.GroupService;
@@ -81,6 +82,7 @@ public class AndroidController {
                 groupService.insertGroup(tempGroup);
                 user.setGroupKey(userinfo.getGroupKey());
                 userService.updateUser(user); // user 컬렉션에 해당 groupKey 정보 업데이트
+                groupService.updateLocationInfo(userinfo);
                 return ResponseEntity.ok(tempGroup);
             }
         }
@@ -107,6 +109,7 @@ public class AndroidController {
                 for(User user : userList) {
                     if (user.getUserEmail().equals(userinfo.getUserEmail())) {
                         user.setGroupKey(updateGroup.getGroupKey());
+                        groupService.updateLocationInfo(userinfo);
                         userService.updateUser(user); // user 컬렉션에 해당 groupKey 정보 업데이트
                     }
                 }
@@ -148,5 +151,21 @@ public class AndroidController {
     @ResponseBody
     public void groupDelete(@RequestBody UserInfo user) throws Exception {
         groupService.deleteGroup(user);
+    }
+
+    //그룹 멤버 삭제
+    @PostMapping("/group-member-delete")
+    @ResponseBody
+    public ResponseEntity<Group> groupUserDelete(@RequestBody String deleteUserName) throws Exception {
+        deleteUserName = deleteUserName.replaceAll("\"", "");
+        log.info("삭제 할 멤버 이름 : {}", deleteUserName);
+        Group updateGroup = groupService.deleteGroupMember(deleteUserName);
+        return ResponseEntity.ok(updateGroup);
+    }
+
+    // 위치 정보를 저장하고 처리 결과를 반환하는 메서드
+    @PostMapping("/save-location")
+    public ResponseEntity<Group> updateLocation(@RequestBody UserInfo user) throws Exception {
+        return ResponseEntity.ok(groupService.updateLocationInfo(user));
     }
 }

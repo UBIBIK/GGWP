@@ -79,26 +79,39 @@ public class GroupServiceImpl implements GroupService {
         throw new Exception("그룹키에 해당하는 그룹은 존재하지 않습니다.");
     }
 
-    // 그룹 멤버 정보 삭제
+    // 그룹 멤버 삭제
     @Override
-    public String deleteGroupMember(String groupName, String groupMemberName) throws Exception {
-        // Firestore에서 그룹 이름으로 문서를 조회
-        ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).whereEqualTo("groupName", groupName).get();
-        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+    public Group deleteGroupMember(String deleteUserName) throws Exception {
+        Query userQuery = firestore.collection("users").whereEqualTo("userName", deleteUserName);
+        ApiFuture<QuerySnapshot> userQuerySnapshot = userQuery.get();
 
-        if (!documents.isEmpty()) {
-            QueryDocumentSnapshot document = documents.getFirst();
-            Group group = document.toObject(Group.class);
-            List<Map<String, Object>> groupMembers = group.getGroupMember();
+        // 삭제하려는 멤버가 그룹에 존재하는지 확인
+        if (userQuerySnapshot.get().getDocuments().isEmpty()) {
+            throw new Exception("삭제하려는 유저가 존재하지 않습니다.");
+        }
 
-            // groupMemberName이 존재하는지 확인, 존재하면 삭제
-            for (Iterator<Map<String, Object>> it = groupMembers.iterator(); it.hasNext();) {
-                Map<String, Object> member = it.next();
-                if (member.get("groupMemberName").equals(groupMemberName)) {
-                    it.remove();
-                    userService.setGroupKeybyUserName(groupMemberName, null);
-                    return updateGroup(group);
-                }
+        String groupKey = userQuerySnapshot.get().getDocuments().getFirst().getString("groupKey");
+        Query groupQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", groupKey);
+        ApiFuture<QuerySnapshot> querySnapshot = groupQuery.get();
+
+        // 그룹 이름이 데이터베이스에 존재하는지 확인
+        if (querySnapshot.get().getDocuments().isEmpty()) {
+            throw new Exception("삭제하려는 그룹이 존재하지 않습니다.");
+        }
+
+        QueryDocumentSnapshot document = querySnapshot.get().getDocuments().getFirst();
+        Group group = document.toObject(Group.class);
+        List<Map<String, Object>> groupMembers = group.getGroupMember();
+
+        // 삭제하려는 유저가 존재하는지 확인, 존재하면 삭제
+        for (Iterator<Map<String, Object>> it = groupMembers.iterator(); it.hasNext();) {
+            Map<String, Object> member = it.next();
+            if (member.get("groupMemberName").equals(deleteUserName)) {
+                it.remove();
+
+                userService.setGroupKeybyUserName(deleteUserName, null);
+                updateGroup(group);
+                return group; // 수정한 그룹을 반환
             }
         }
         throw new Exception("해당하는 그룹은 존재하지 않습니다.");
@@ -207,6 +220,34 @@ public class GroupServiceImpl implements GroupService {
         } else {
             throw new Exception("해당하는 문서가 존재하지 않습니다.");
         }
+    }
+
+    // 그룹 멤버의 본인 위치 업데이트
+    @Override
+    public Group updateLocationInfo(UserInfo user) throws Exception {
+        Group resultGroup = null;
+        // 그룹 키로 파이어베이스에서 그룹 조회
+        Query groupQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", user.getGroupKey());
+        ApiFuture<QuerySnapshot> querySnapshot = groupQuery.get();
+        // 그룹이 파이어베이스에 존재하는지 확인
+        if (querySnapshot.get().getDocuments().isEmpty()) {
+            throw new Exception("삭제하려는 그룹이 존재하지 않습니다.");
+        }
+
+        QueryDocumentSnapshot groupDocument = querySnapshot.get().getDocuments().getFirst();
+        Group group = groupDocument.toObject(Group.class);
+        List<Map<String, Object>> groupMembers = group.getGroupMember();
+
+        // 모든 그룹 멤버를 검색하여 그룹 키를 null로 설정
+        for (Map<String, Object> member : groupMembers) {
+            if (member.get("groupMemberName").equals(user.getUserName())) {
+                member.put("latitude", user.getLocationInfo().get("latitude"));
+                member.put("longitude", user.getLocationInfo().get("longitude"));
+                updateGroup(group);
+                return group; // 수정한 그룹을 반환합니다.
+            }
+        }
+        throw new Exception("해당하는 그룹 멤버가 존재하지 않습니다.");
     }
 
 }

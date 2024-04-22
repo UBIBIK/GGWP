@@ -11,7 +11,7 @@ public interface GroupService {
 
     Group addGroupMember(String groupKey, UserInfo user) throws Exception; // 그룹 멤버 추가
 
-    String deleteGroupMember(String groupName, String groupMemberName) throws Exception; // 그룹 멤버 정보 삭제
+    Group deleteGroupMember(String deleteUserName) throws Exception; //그룹 멤버 정보 삭제
 
     String updateGroup(Group group) throws Exception; // 그룹 정보 수정
 
@@ -24,5 +24,7 @@ public interface GroupService {
     List<String> getGroupMemberByGroupCode(String groupName) throws Exception; // 그룹 코드로 그룹원 조회
     
     String getGroupNameByGroupCode(String groupCode) throws Exception; // 그룹 코드로 그룹 이름 조회
+
+    Group updateLocationInfo(UserInfo user) throws Exception; // 그룹 멤버의 본인 위치 업데이트
 
 }

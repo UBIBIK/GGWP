@@ -3,6 +3,9 @@ package ggwp.server.guardiango.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Getter
 @Setter
 public class UserInfo {
@@ -11,6 +14,7 @@ public class UserInfo {
     private String userEmail;
     private String phoneNumber;
     private String userName;
+    private Map<String, Object> locationInfo = new HashMap<>();
 
     public UserInfo() {}
 
