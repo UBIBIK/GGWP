@@ -12,15 +12,6 @@ public class Group {
 
     public Group() {}
 
-    public Group(String groupMemberName, String groupKey) {
-        this.groupName = groupMemberName + "의 그룹";
-        this.groupKey = groupKey;
-        Map<String, Object> memberInfo = new HashMap<>();
-        memberInfo.put("groupMemberName", groupMemberName);
-        memberInfo.put("groupRole", "보호자");
-        this.groupMember.add(memberInfo);
-    }
-
     public ArrayList<Map<String, Object>> getGroupMember() {
         return groupMember;
     }

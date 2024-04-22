@@ -17,8 +17,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.guardiango.Custom.LocationService;
+import com.example.guardiango.Custom.MemberAdapter;
 import com.example.guardiango.R;
 import com.example.guardiango.entity.Group;
+import com.example.guardiango.entity.LocationData;
 import com.example.guardiango.entity.SharedPreferencesGroup;
 import com.example.guardiango.entity.UserInfo;
 import com.example.guardiango.server.RetrofitClient;
@@ -27,16 +30,17 @@ import com.example.guardiango.server.UserRetrofitInterface;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+//TODO : 방장이 아닌 멤버 그룹 나가기 기능 추가하기
 public class home_group extends AppCompatActivity {
     private SharedPreferencesHelper sharedPreferencesHelper;
     private SharedPreferencesGroup sharedPreferencesGroup;
+    private LocationService locationService;
 
     ListView groupListView;
     ArrayList<String> groupList = new ArrayList<>();
@@ -50,6 +54,9 @@ public class home_group extends AppCompatActivity {
         groupListView = findViewById(R.id.groupListView);
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, groupList);
         groupListView.setAdapter(adapter);
+
+        //위치 서비스 등록
+        locationService = new LocationService(this);
 
         //소속된 그룹이 있는지 확인
         loadUserGroups();
@@ -90,6 +97,7 @@ public class home_group extends AppCompatActivity {
                     Log.w("그룹 마스터", group.getGroupMaster());
                     String groupName = group.getGroupName();
                     if (groupName != null) { // null 체크 추가
+                        groupList.clear();
                         groupList.add(groupName);
                         adapter.notifyDataSetChanged();
                         sharedPreferencesGroup.saveGroupInfo(group);
@@ -125,6 +133,11 @@ public class home_group extends AppCompatActivity {
 
         // SharedPreferences에서 그룹 정보 가져오기
         sharedPreferencesGroup = new SharedPreferencesGroup(this);
+
+        //로그인 정보에 위치 정보 저장
+        LocationData currentLocation = locationService.getCurrentLocationData();
+        user.getLocationInfo().put("latitude", currentLocation.getLatitude());
+        user.getLocationInfo().put("longitude", currentLocation.getLongitude());
 
         Gson gson = new Gson();
         String json = gson.toJson(user);
@@ -192,6 +205,11 @@ public class home_group extends AppCompatActivity {
                 // SharedPreferences에서 그룹 정보 가져오기
                 sharedPreferencesGroup = new SharedPreferencesGroup(this);
 
+                //로그인 정보에 위치 정보 저장
+                LocationData currentLocation = locationService.getCurrentLocationData();
+                user.getLocationInfo().put("latitude", currentLocation.getLatitude());
+                user.getLocationInfo().put("longitude", currentLocation.getLongitude());
+
                 UserRetrofitInterface Interface = RetrofitClient.getUserRetrofitInterface();
 
                 Gson gson = new Gson();
@@ -234,38 +252,27 @@ public class home_group extends AppCompatActivity {
 
     //리스트 클릭 이벤트
     private void showGroupDetailDialog(Group group) {
-        // SharedPreferences에서 사용자 정보 가져오기
-        sharedPreferencesHelper = new SharedPreferencesHelper(this);
-        UserInfo user = sharedPreferencesHelper.getUserInfo();
-
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(group.getGroupName() + " - 그룹 상세 정보");
 
-        // 구성원 목록을 보여줄 ListView 생성
         ListView memberListView = new ListView(this);
-        ArrayList<String> memberDetails = new ArrayList<>();
-        for (Map<String, Object> member : group.getGroupMember()) {
-            String memberName = (String) member.get("groupMemberName");
-            String memberRole = (String) member.get("groupRole");
-            memberDetails.add(memberName + " - " + memberRole);
-        }
-
-        ArrayAdapter<String> memberAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, memberDetails);
+        MemberAdapter memberAdapter = new MemberAdapter(this, group.getGroupMember(),
+                group.getGroupMaster().equals(sharedPreferencesHelper.getUserInfo().getUserEmail()));
         memberListView.setAdapter(memberAdapter);
         builder.setView(memberListView);
 
-        builder.setPositiveButton("닫기", (dialog, which) -> dialog.dismiss());
+        // 닫기 버튼 항상 추가
+        builder.setNeutralButton("닫기", (dialog, which) -> dialog.dismiss());
 
-        Log.w("로그인한 유저의 이메일", user.getUserEmail());
-        if (group.getGroupMaster().equals(user.getUserEmail())) {
-            builder.setNegativeButton("그룹 삭제", (dialog, which) -> {
-                deleteGroup();
-            });
+        if(sharedPreferencesHelper.getUserInfo().getGroupKey()
+                .equals(sharedPreferencesGroup.getGroupInfo().getGroupKey())) {
+            builder.setPositiveButton("삭제", (dialog, which) -> deleteGroup());
         }
 
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
 
     //그룹 삭제
     private void deleteGroup() {
@@ -321,6 +328,8 @@ public class home_group extends AppCompatActivity {
         if (id == R.id.menu_refresh) {
             // 새로고침 로직
             loadUserGroups();
+            sendLocationToServer();
+            //TODO : 본인의 위치를 서버로 전송
             return true;
         } else if (id == R.id.menu_logout) {
             logout();
@@ -329,6 +338,7 @@ public class home_group extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    //로그아웃
     private void logout() {
         // 모든 사용자 정보와 그룹 정보 삭제
         if (sharedPreferencesHelper != null) {
@@ -341,8 +351,49 @@ public class home_group extends AppCompatActivity {
         // 로그아웃 후 로그인 화면으로 이동 또는 앱 재시작
         Intent restartIntent = getBaseContext().getPackageManager()
                 .getLaunchIntentForPackage(getBaseContext().getPackageName());
+        assert restartIntent != null;
         restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(restartIntent);
+    }
+
+    //위치 전송
+    private void sendLocationToServer() {
+        //그룹 정보 가져오기
+        sharedPreferencesGroup = new SharedPreferencesGroup(this);
+
+        //사용자 정보 가져와서 위치 정보 삽입
+        sharedPreferencesHelper = new SharedPreferencesHelper(this);
+        UserInfo user = sharedPreferencesHelper.getUserInfo();
+        LocationData currentLocation = locationService.getCurrentLocationData();
+
+        user.getLocationInfo().put("latitude", currentLocation.getLatitude());
+        user.getLocationInfo().put("longitude", currentLocation.getLongitude());
+
+        if (user != null) {
+            // 서버에 위치 정보 전송
+            UserRetrofitInterface apiService = RetrofitClient.getUserRetrofitInterface();
+            Call<Group> call = apiService.updateLocation(user);
+            call.enqueue(new Callback<Group>() {
+                @Override
+                public void onResponse(@NonNull Call<Group> call, @NonNull Response<Group> response) {
+                    if (response.isSuccessful()) {
+                        sharedPreferencesHelper.saveUserInfo(user);
+                        sharedPreferencesGroup.saveGroupInfo(response.body());
+
+                        Toast.makeText(getApplicationContext(), "위치 업데이트 성공", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "위치 업데이트 실패", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<Group> call, @NonNull Throwable t) {
+                    Toast.makeText(getApplicationContext(), "네트워크 오류", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            Toast.makeText(getApplicationContext(), "위치 정보 없음", Toast.LENGTH_SHORT).show();
+        }
     }
 
 }

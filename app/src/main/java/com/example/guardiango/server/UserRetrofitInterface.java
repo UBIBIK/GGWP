@@ -1,6 +1,7 @@
 package com.example.guardiango.server;
 
 import com.example.guardiango.entity.Group;
+import com.example.guardiango.entity.LocationData;
 import com.example.guardiango.entity.UserDTO;
 import com.example.guardiango.entity.UserInfo;
 
@@ -27,4 +28,10 @@ public interface UserRetrofitInterface {
 
     @POST("group-delete")
     Call<ResponseBody> groupDelete(@Body UserInfo user);
+
+    @POST("group-member-delete")
+    Call<Group> groupUserDelete(@Body String deleteUserName);
+
+    @POST("save-location")
+    Call<Group> updateLocation(@Body UserInfo user);
 }

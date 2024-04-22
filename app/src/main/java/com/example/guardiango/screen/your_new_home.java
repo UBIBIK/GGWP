@@ -7,6 +7,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -23,6 +24,8 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.guardiango.R;
+import com.example.guardiango.entity.Group;
+import com.example.guardiango.entity.SharedPreferencesGroup;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -38,10 +41,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class your_new_home extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -68,8 +73,10 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
     private Location location;
 
     private View mLayout; // snackbar 사용하기 위함.
+    private SharedPreferencesGroup sharedPreferencesGroup;
 
 
+    @SuppressLint("VisibleForTests")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +95,7 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        assert mapFragment != null;
         mapFragment.getMapAsync(this);
 
         //홈에서 그룹으로 가는 버튼 구현
@@ -105,6 +113,7 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
+        sharedPreferencesGroup = new SharedPreferencesGroup(this);
 
         Log.d(TAG, "onMapReady: 들어옴 ");
 
@@ -112,6 +121,9 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
 
         // 지도의 초기위치 이동
         setDefaultLocation();
+
+        //그룹원 위치 표시
+        loadGroupMarkers(sharedPreferencesGroup.getGroupInfo());
 
         // 런타임 퍼미션 처리
         // 1. 위치 퍼미션을 가지고 있는지 확인합니다.
@@ -147,6 +159,15 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
                 Log.d(TAG, "onMapClick: ");
             }
         });
+
+        //마커 클릭 리스너 설정
+        mMap.setOnMarkerClickListener(marker -> {
+            Map<String, Object> member = (Map<String, Object>) marker.getTag();
+            if (member != null) {
+                showMemberOptionsDialog(member);
+            }
+            return true;
+        });
     }
 
     LocationCallback locationCallback = new LocationCallback() {
@@ -166,7 +187,7 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
                         String.valueOf(location.getLongitude());
 
                 // 현재 위치에 마커 생성하고 이동
-                setCurrentLocation(location, markerTitle, markerSnippet);
+                //setCurrentLocation(location, markerTitle, markerSnippet);
 
                 mCurrentLocation = location;
             }
@@ -204,29 +225,6 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
             return address.getAddressLine(0).toString();
         }
     }
-
-    private void setCurrentLocation(Location location, String markerTitle, String markerSnippet) {
-
-        if(currentMarker != null)
-        {
-            currentMarker.remove();
-        }
-
-        LatLng currentLatLng =  new LatLng(location.getLatitude(), location.getLongitude());
-
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(currentLatLng);
-        markerOptions.title(markerTitle);
-        markerOptions.snippet(markerSnippet);
-        markerOptions.draggable(true);
-
-        currentMarker = mMap.addMarker(markerOptions);
-
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(currentLatLng);
-        mMap.moveCamera(cameraUpdate);
-    }
-
-
 
     private void startLocationUpdates() {
         if(!checkLocationServicesStatus()){
@@ -322,23 +320,53 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
 
         // 기본 위치
         LatLng DEFAULT_LOCATION = new LatLng(37.56, 126.97);
-        String markerTitle = "위치 정보 가져올 수 없음";
-        String markerSnippet = "위치 퍼미션과 GPS 활성 여부를 확인하세요";
-
-        if(currentMarker != null){
-            currentMarker.remove();
-        }
-
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(DEFAULT_LOCATION);
-        markerOptions.title(markerTitle);
-        markerOptions.snippet(markerSnippet);
-        markerOptions.draggable(true);
-        currentMarker = mMap.addMarker(markerOptions);
 
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, 15);
         mMap.moveCamera(cameraUpdate);
     }
 
+    private void loadGroupMarkers(Group group) {
+        if (group != null && group.getGroupMember() != null) {
+            for (Map<String, Object> member : group.getGroupMember()) {
+                Double lat = (Double) member.get("latitude");
+                Double lon = (Double) member.get("longitude");
+                if (lat != null && lon != null) {
+                    LatLng memberLocation = new LatLng(lat, lon);
+                    String memberName = (String) member.get("groupMemberName");
+                    mMap.addMarker(new MarkerOptions().position(memberLocation).title(memberName));
+                }
+            }
+        } else {
+            Log.d(TAG, "No valid group data provided.");
+        }
+    }
+
+    //마커 클릭 이벤트
+    private void showMemberOptionsDialog(Map<String, Object> member) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        String memberName = (String) member.get("groupMemberName");
+        builder.setTitle(memberName + "의 정보");
+
+        String message = "역할: " + member.get("groupRole");
+        builder.setMessage(message);
+
+        // 경로 설정 버튼
+        builder.setPositiveButton("경로 설정", (dialog, id) -> {
+            LatLng location = new LatLng((Double) member.get("latitude"), (Double) member.get("longitude"));
+            //TODO : 경로 설정 openMapsForDirections(location);
+        });
+
+        // 스트리트뷰 확인 버튼
+        builder.setNegativeButton("스트리트뷰 확인", (dialog, id) -> {
+            LatLng location = new LatLng((Double) member.get("latitude"), (Double) member.get("longitude"));
+            //TODO : 스트리트 뷰 보여주기 openStreetView(location);
+        });
+
+        // 닫기 버튼
+        builder.setNeutralButton("닫기", (dialog, id) -> dialog.dismiss());
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
 
 }
