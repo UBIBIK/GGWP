@@ -32,6 +32,8 @@
 
         <activity android:name=".screen.home_group"></activity>
 
+        <activity android:name=".screen.StreetView"></activity>
+
         <!--구글맵 부분-->
         <meta-data
             android:name="com.google.android.geo.API_KEY"

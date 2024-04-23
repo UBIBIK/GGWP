@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
         sharedPreferencesHelper = new SharedPreferencesHelper(this);
 
         Button login = (Button) findViewById(R.id.login);
@@ -50,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
                 EditText editEmail = findViewById(R.id.editTextUserID);
                 EditText editPassword = findViewById(R.id.editTextPassword);
 
-                RetrofitClient retrofitClient = RetrofitClient.getInstance();
+                RetrofitClient.getInstance();
                 UserRetrofitInterface userRetrofitInterface = RetrofitClient.getUserRetrofitInterface();
 
                 String email = editEmail.getText().toString().trim();
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
                 call.enqueue(new Callback<UserInfo>() {
                     @Override
-                    public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
+                    public void onResponse(Call<UserInfo> call, @NonNull Response<UserInfo> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             Log.w("로그인", "성공");
                             UserInfo userInfo = response.body();
@@ -130,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        RetrofitClient.getInstance();
         UserRetrofitInterface loadUserGroups = RetrofitClient.getUserRetrofitInterface();
 
         Call<Group> call = loadUserGroups.getUserGroups(user);

@@ -41,7 +41,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.List;
@@ -51,7 +50,6 @@ import java.util.Map;
 public class your_new_home extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
 
     private GoogleMap mMap;
-    private Marker currentMarker = null;
 
     private static final String TAG = "googlemap";
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
@@ -60,7 +58,6 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
 
     // OnRequestPermissionsResultCallback에서 수신된 결과에서 ActivityCompat.OnRequestPermissionsResultCallback를 사용한 퍼미션 요청을 구별하기 위함
     private static final int PERMISSION_REQUEST_CODE = 100;
-    boolean needRequest = false;
 
     // 앱을 실행하기 위해 필요한 퍼미션 정의
     String[] REQUIRED_PERMISSION = {Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION };
@@ -162,10 +159,12 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
 
         //마커 클릭 리스너 설정
         mMap.setOnMarkerClickListener(marker -> {
+            Log.w("상태메시지", "마커 클릭");
             Map<String, Object> member = (Map<String, Object>) marker.getTag();
             if (member != null) {
                 showMemberOptionsDialog(member);
             }
+            else {Log.w("상태메시지", "왜 안댐?");}
             return true;
         });
     }
@@ -333,7 +332,8 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
                 if (lat != null && lon != null) {
                     LatLng memberLocation = new LatLng(lat, lon);
                     String memberName = (String) member.get("groupMemberName");
-                    mMap.addMarker(new MarkerOptions().position(memberLocation).title(memberName));
+                    Marker marker = mMap.addMarker(new MarkerOptions().position(memberLocation).title(memberName));
+                    marker.setTag(member);//marker의 정보를 태그로 저장
                 }
             }
         } else {
@@ -343,23 +343,27 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
 
     //마커 클릭 이벤트
     private void showMemberOptionsDialog(Map<String, Object> member) {
+        Log.w("상태메시지", "마커 클릭");
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         String memberName = (String) member.get("groupMemberName");
         builder.setTitle(memberName + "의 정보");
 
-        String message = "역할: " + member.get("groupRole");
+        LatLng location = new LatLng((Double) member.get("latitude"), (Double) member.get("longitude"));
+        String address = getAddressFromLocation(location); // 지오코딩을 통해 주소를 가져옵니다.
+
+        String message = "역할: " + member.get("groupRole") + "\n주소: " + address;
         builder.setMessage(message);
 
         // 경로 설정 버튼
         builder.setPositiveButton("경로 설정", (dialog, id) -> {
-            LatLng location = new LatLng((Double) member.get("latitude"), (Double) member.get("longitude"));
             //TODO : 경로 설정 openMapsForDirections(location);
         });
 
-        // 스트리트뷰 확인 버튼
         builder.setNegativeButton("스트리트뷰 확인", (dialog, id) -> {
-            LatLng location = new LatLng((Double) member.get("latitude"), (Double) member.get("longitude"));
-            //TODO : 스트리트 뷰 보여주기 openStreetView(location);
+            Intent intent = new Intent(your_new_home.this, StreetView.class);
+            intent.putExtra("latitude", location.latitude);
+            intent.putExtra("longitude", location.longitude);
+            startActivity(intent);
         });
 
         // 닫기 버튼
@@ -367,6 +371,27 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    // 주소를 가져오는 메소드
+    private String getAddressFromLocation(LatLng location) {
+        // 한국어 주소 결과를 강제로 얻기 위해 Locale.KOREA 사용
+        Geocoder geocoder = new Geocoder(this, Locale.KOREA);
+        List<Address> addresses;
+        try {
+            addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1);
+            if (addresses != null && !addresses.isEmpty()) {
+                return addresses.get(0).getAddressLine(0);
+            } else {
+                return "주소를 찾을 수 없습니다.";
+            }
+        } catch (IOException e) {
+            Log.e("GeoCoder", "서비스 사용불가", e);
+            return "지오코더 서비스 사용 불가";
+        } catch (IllegalArgumentException e) {
+            Log.e("GeoCoder", "잘못된 GPS 좌표", e);
+            return "잘못된 GPS 좌표";
+        }
     }
 
 }
