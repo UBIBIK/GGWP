@@ -27,7 +27,7 @@ public class GroupServiceImpl implements GroupService {
 
     // 그룹 추가
     @Override
-    public String insertGroup(Group group) throws ExecutionException, InterruptedException {
+    public String insertGroup(Group group, UserInfo user) throws ExecutionException, InterruptedException {
         if (group == null) {
             throw new IllegalArgumentException("Group 객체가 null입니다.");
         }
@@ -71,12 +71,14 @@ public class GroupServiceImpl implements GroupService {
             Map<String, Object> memberInfo = new HashMap<>();
             memberInfo.put("groupMemberName", user.getUserName());
             memberInfo.put("groupRole", "보호 대상");
+            memberInfo.put("latitude", null);
+            memberInfo.put("longitude", null);
             group.getGroupMember().add(memberInfo);
 
             updateGroup(group);
             return group;
         }
-        throw new Exception("그룹키에 해당하는 그룹은 존재하지 않습니다.");
+        throw new Exception("해당 유저의 그룹 키가 존재하지 않습니다.");
     }
 
     // 그룹 멤버 삭제
@@ -125,7 +127,7 @@ public class GroupServiceImpl implements GroupService {
         return future.get().getUpdateTime().toString();
     }
 
-    public void deleteGroup(UserInfo user) throws Exception {
+    public boolean deleteGroup(UserInfo user) throws Exception {
         // 그룹 이름이 Firestore에 존재하는지 확인
         Query groupQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", user.getGroupKey());
         ApiFuture<QuerySnapshot> querySnapshot = groupQuery.get();
@@ -152,6 +154,7 @@ public class GroupServiceImpl implements GroupService {
                 throw new Exception("해당 그룹 마스터의 이메일이 일치하지 않습니다.");
             }
         }
+        return false;
     }
 
 
@@ -231,7 +234,7 @@ public class GroupServiceImpl implements GroupService {
         ApiFuture<QuerySnapshot> querySnapshot = groupQuery.get();
         // 그룹이 파이어베이스에 존재하는지 확인
         if (querySnapshot.get().getDocuments().isEmpty()) {
-            throw new Exception("삭제하려는 그룹이 존재하지 않습니다.");
+            throw new Exception("해당 그룹이 존재하지 않습니다.");
         }
 
         QueryDocumentSnapshot groupDocument = querySnapshot.get().getDocuments().getFirst();
@@ -249,5 +252,4 @@ public class GroupServiceImpl implements GroupService {
         }
         throw new Exception("해당하는 그룹 멤버가 존재하지 않습니다.");
     }
-
 }

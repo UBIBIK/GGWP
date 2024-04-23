@@ -1,7 +1,6 @@
 package ggwp.server.guardiango.controller;
 
 import ggwp.server.guardiango.entity.Group;
-import ggwp.server.guardiango.entity.LocationData;
 import ggwp.server.guardiango.entity.User;
 import ggwp.server.guardiango.entity.UserInfo;
 import ggwp.server.guardiango.service.GroupService;
