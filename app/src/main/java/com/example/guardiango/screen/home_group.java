@@ -1,5 +1,8 @@
 package com.example.guardiango.screen;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
@@ -233,7 +236,7 @@ public class home_group extends AppCompatActivity {
                             String groupName = response.body().getGroupName();
                             groupList.add(groupName);
                             adapter.notifyDataSetChanged();
-                            Toast.makeText(home_group.this, "그룹이 생성되었습니다.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(home_group.this, "그룹에 참가되었습니다.", Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -250,7 +253,7 @@ public class home_group extends AppCompatActivity {
         builder.show();
     }
 
-    //리스트 클릭 이벤트
+    // 리스트 클릭 이벤트
     private void showGroupDetailDialog(Group group) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(group.getGroupName() + " - 그룹 상세 정보");
@@ -264,14 +267,24 @@ public class home_group extends AppCompatActivity {
         // 닫기 버튼 항상 추가
         builder.setNeutralButton("닫기", (dialog, which) -> dialog.dismiss());
 
-        if(sharedPreferencesHelper.getUserInfo().getGroupKey()
-                .equals(sharedPreferencesGroup.getGroupInfo().getGroupKey())) {
+        // 삭제 버튼 추가 (권한이 있을 경우)
+        if(sharedPreferencesHelper.getUserInfo().getUserEmail()
+                .equals(group.getGroupMaster())) {
             builder.setPositiveButton("삭제", (dialog, which) -> deleteGroup());
+
+            // 초대코드 복사 버튼 추가
+            builder.setNegativeButton("초대코드 복사", (dialog, which) -> {
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("groupKey", group.getGroupKey());
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(home_group.this, "초대코드가 클립보드에 복사되었습니다.", Toast.LENGTH_SHORT).show();
+            });
         }
 
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
 
 
     //그룹 삭제
