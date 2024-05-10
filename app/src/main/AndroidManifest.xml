@@ -34,6 +34,8 @@
 
         <activity android:name=".screen.StreetView"></activity>
 
+        <activity android:name=".screen.find_destination"></activity>
+
         <!--구글맵 부분-->
         <meta-data
             android:name="com.google.android.geo.API_KEY"

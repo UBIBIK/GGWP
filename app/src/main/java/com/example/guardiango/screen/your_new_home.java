@@ -19,13 +19,21 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.guardiango.Custom.LocationService;
 import com.example.guardiango.R;
 import com.example.guardiango.entity.Group;
+import com.example.guardiango.entity.LocationData;
 import com.example.guardiango.entity.SharedPreferencesGroup;
+import com.example.guardiango.entity.SharedPreferencesHelper;
+import com.example.guardiango.entity.UserInfo;
+import com.example.guardiango.server.RetrofitClient;
+import com.example.guardiango.server.UserRetrofitInterface;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -47,7 +55,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class your_new_home extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
+
+    private SharedPreferencesHelper sharedPreferencesHelper;
+    private SharedPreferencesGroup sharedPreferencesGroup;
 
     private GoogleMap mMap;
 
@@ -70,7 +85,8 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
     private Location location;
 
     private View mLayout; // snackbar 사용하기 위함.
-    private SharedPreferencesGroup sharedPreferencesGroup;
+
+    private LocationService locationService;
 
 
     @SuppressLint("VisibleForTests")
@@ -78,6 +94,12 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.your_new_home);
+
+        // 권한 요청
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_CODE);
+
+        //위치 서비스 등록
+        locationService = new LocationService(this);
 
         locationRequest = new LocationRequest()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
@@ -116,8 +138,25 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
 
         mMap = googleMap;
 
-        // 지도의 초기위치 이동
-        setDefaultLocation();
+        mMap = googleMap;
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // 권한 체크 로직
+            return;
+        }
+
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        // 사용자의 마지막 위치를 가져와 지도의 초기 위치로 설정
+                        LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15));
+                    } else {
+                        // 위치 정보가 없을 경우 기본 위치로 설정
+                        setDefaultLocation();
+                    }
+                });
 
         //그룹원 위치 표시
         loadGroupMarkers(sharedPreferencesGroup.getGroupInfo());
@@ -167,6 +206,7 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
             else {Log.w("상태메시지", "왜 안댐?");}
             return true;
         });
+
     }
 
     LocationCallback locationCallback = new LocationCallback() {
@@ -180,13 +220,6 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
                 location = locationList.get(locationList.size() -1);
 
                 currentPosition = new LatLng(location.getLatitude(), location.getLongitude());
-
-                String markerTitle = getCurrentAddress(currentPosition);
-                String markerSnippet = "위도 :" + String.valueOf(location.getLatitude()) + "경도 :" +
-                        String.valueOf(location.getLongitude());
-
-                // 현재 위치에 마커 생성하고 이동
-                //setCurrentLocation(location, markerTitle, markerSnippet);
 
                 mCurrentLocation = location;
             }
@@ -317,11 +350,9 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
 
     private void setDefaultLocation() {
 
-        // 기본 위치
-        LatLng DEFAULT_LOCATION = new LatLng(37.56, 126.97);
-
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, 15);
-        mMap.moveCamera(cameraUpdate);
+        // 기본 위치 설정
+        LatLng DEFAULT_LOCATION = new LatLng(37.56, 126.97);  // 서울 중심부 근처
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, 15));
     }
 
     private void loadGroupMarkers(Group group) {
@@ -356,7 +387,9 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
 
         // 경로 설정 버튼
         builder.setPositiveButton("경로 설정", (dialog, id) -> {
-            //TODO : 경로 설정 openMapsForDirections(location);
+            Intent intent = new Intent(your_new_home.this, find_destination.class);
+            intent.putExtra("location", address);
+            startActivity(intent);
         });
 
         builder.setNegativeButton("스트리트뷰 확인", (dialog, id) -> {
@@ -392,6 +425,131 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
             Log.e("GeoCoder", "잘못된 GPS 좌표", e);
             return "잘못된 GPS 좌표";
         }
+    }
+
+    //메뉴 항목 구현
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.home_group_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.menu_refresh) {
+            // 새로고침 로직
+            sendLocationToServer();
+            loadUserGroups();
+
+            // UI 업데이트 로직
+            mMap.clear(); // 지도에 그려진 모든 마커 삭제
+            loadGroupMarkers(sharedPreferencesGroup.getGroupInfo()); // 마커 다시 로드
+            if (currentPosition != null) {
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(currentPosition)); // 현재 위치로 카메라 이동
+            }
+            return true;
+        } else if (id == R.id.menu_logout) {
+            logout();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    //그룹정보 불러오기
+    private void loadUserGroups() {
+        SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(this);
+        UserInfo user = sharedPreferencesHelper.getUserInfo();
+
+        sharedPreferencesGroup = new SharedPreferencesGroup(this);
+        String userGroupKey = user.getGroupKey();
+        if(userGroupKey == null) {
+            Toast.makeText(your_new_home.this, "그룹이 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        UserRetrofitInterface loadUserGroups = RetrofitClient.getUserRetrofitInterface();
+
+        Call<Group> call = loadUserGroups.getUserGroups(user);
+        call.enqueue(new Callback<Group>() {
+            @Override
+            public void onResponse(@NonNull Call<Group> call, @NonNull Response<Group> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Group group = response.body();
+                    Log.w("그룹 마스터", group.getGroupMaster());
+                    String groupName = group.getGroupName();
+                    if (groupName != null) { // null 체크 추가
+                        sharedPreferencesGroup.saveGroupInfo(group);
+
+                    }
+                } else {
+                    Toast.makeText(your_new_home.this, "그룹이 없습니다.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Group> call, @NonNull Throwable t) {
+                Toast.makeText(your_new_home.this, "네트워크 문제로 그룹 정보를 불러오는데 실패했습니다: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    //위치 전송
+    private void sendLocationToServer() {
+        //그룹 정보 가져오기
+        sharedPreferencesGroup = new SharedPreferencesGroup(this);
+
+        //사용자 정보 가져와서 위치 정보 삽입
+        SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(this);
+        UserInfo user = sharedPreferencesHelper.getUserInfo();
+        LocationData currentLocation = locationService.getCurrentLocationData();
+
+        user.getLocationInfo().put("latitude", currentLocation.getLatitude());
+        user.getLocationInfo().put("longitude", currentLocation.getLongitude());
+
+        if (user != null) {
+            // 서버에 위치 정보 전송
+            UserRetrofitInterface apiService = RetrofitClient.getUserRetrofitInterface();
+            Call<Group> call = apiService.updateLocation(user);
+            call.enqueue(new Callback<Group>() {
+                @Override
+                public void onResponse(@NonNull Call<Group> call, @NonNull Response<Group> response) {
+                    if (response.isSuccessful()) {
+                        sharedPreferencesHelper.saveUserInfo(user);
+                        sharedPreferencesGroup.saveGroupInfo(response.body());
+
+                        Toast.makeText(getApplicationContext(), "위치 업데이트 성공", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "위치 업데이트 실패", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<Group> call, @NonNull Throwable t) {
+                    Toast.makeText(getApplicationContext(), "네트워크 오류", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            Toast.makeText(getApplicationContext(), "위치 정보 없음", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    //로그아웃
+    private void logout() {
+        // 모든 사용자 정보와 그룹 정보 삭제
+        if (sharedPreferencesHelper != null) {
+            sharedPreferencesHelper.clearUserInfo();
+        }
+        if (sharedPreferencesGroup != null) {
+            sharedPreferencesGroup.clearGroupInfo();
+        }
+
+        // 로그아웃 후 로그인 화면으로 이동 또는 앱 재시작
+        Intent restartIntent = getBaseContext().getPackageManager()
+                .getLaunchIntentForPackage(getBaseContext().getPackageName());
+        assert restartIntent != null;
+        restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(restartIntent);
     }
 
 }
