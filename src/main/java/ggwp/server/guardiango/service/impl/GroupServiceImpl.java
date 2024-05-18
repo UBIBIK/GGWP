@@ -7,6 +7,7 @@ import ggwp.server.guardiango.entity.Group;
 import ggwp.server.guardiango.entity.User;
 import ggwp.server.guardiango.entity.UserInfo;
 import ggwp.server.guardiango.service.GroupService;
+import ggwp.server.guardiango.service.UserReportService;
 import ggwp.server.guardiango.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,12 @@ public class GroupServiceImpl implements GroupService {
     public static final String COLLECTION_NAME = "groups";
     Firestore firestore = FirestoreClient.getFirestore();
     private final UserService userService;
+    private final UserReportService userReportService;
 
     @Autowired
-    public GroupServiceImpl(UserService userService) {
+    public GroupServiceImpl(UserService userService, UserReportService userReportService, UserReportService userReportService1) {
         this.userService = userService;
+        this.userReportService = userReportService1;
     }
 
     // 그룹 추가
@@ -39,11 +42,15 @@ public class GroupServiceImpl implements GroupService {
 
         if (documentSnapshot.exists()) {
             // 동일한 groupname을 가진 사용자가 이미 존재하면 예외
-            throw new IllegalArgumentException("동일한 userEmail을 가진 사용자가 이미 존재합니다.");
+            throw new IllegalArgumentException("동일한 그룹 이름을 가진 그룹이 이미 존재합니다.");
         }
 
         // 그룹 정보 저장
         ApiFuture<WriteResult> future = firestore.collection(COLLECTION_NAME).document(group.getGroupName()).set(group);
+
+        /*// 유저 신고 목록 생성
+        userReportService.insertUserReport(user);*/
+
         // 성공적으로 저장되었을 때의 시간을 반환
         return future.get().getUpdateTime().toString();
     }
@@ -51,35 +58,54 @@ public class GroupServiceImpl implements GroupService {
     // 그룳 멤버 추가
     @Override
     public Group addGroupMember(String groupKey, UserInfo user) throws Exception {
-        // 그룹 이름으로 문서 조회
-        ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", groupKey).get();
+        // Firestore에서 그룹 컬렉션을 참조
+        CollectionReference groupCollection = firestore.collection(COLLECTION_NAME);
+
+        // 그룹 키로 그룹 문서를 조회
+        ApiFuture<QuerySnapshot> future = groupCollection.whereEqualTo("groupKey", groupKey).get();
+
+        // 문서 결과를 가져옴
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
 
+        // 문서가 존재하는 경우
         if (!documents.isEmpty()) {
+            // 첫 번째 문서를 가져옴
             QueryDocumentSnapshot document = documents.getFirst();
+
+            // 문서를 Group 객체로 변환
             Group group = document.toObject(Group.class);
+
+            // 그룹 멤버 리스트를 가져옴
             List<Map<String, Object>> groupMembers = group.getGroupMember();
 
-            // 그룹 멤버 이름이 이미 존재하는지 검사
+            // 그룹 멤버 리스트를 순회하며 중복 멤버를 검사
             for (Map<String, Object> member : groupMembers) {
                 if (member.get("groupMemberName").equals(user.getUserName())) {
                     throw new Exception("해당 이름의 그룹 멤버가 이미 존재합니다.");
                 }
             }
 
-            // 새로운 멤버 정보를 추가합니다.
-            Map<String, Object> memberInfo = new HashMap<>();
-            memberInfo.put("groupMemberName", user.getUserName());
-            memberInfo.put("groupRole", "보호 대상");
-            memberInfo.put("latitude", null);
-            memberInfo.put("longitude", null);
-            group.getGroupMember().add(memberInfo);
+            // 새로운 멤버 정보를 생성
+            Map<String, Object> newMemberInfo = new HashMap<>();
+            newMemberInfo.put("groupMemberName", user.getUserName());
+            newMemberInfo.put("groupRole", "보호 대상");
+            newMemberInfo.put("latitude", null);
+            newMemberInfo.put("longitude", null);
 
+            // 그룹 멤버 리스트에 새로운 멤버 정보를 추가
+            group.getGroupMember().add(newMemberInfo);
+
+            // 그룹 정보를 업데이트
             updateGroup(group);
+
+            // 업데이트된 그룹 정보를 반환
             return group;
         }
+
+        // 문서가 존재하지 않는 경우 예외를 발생
         throw new Exception("해당 유저의 그룹 키가 존재하지 않습니다.");
     }
+
 
     // 그룹 멤버 삭제
     @Override
@@ -89,7 +115,7 @@ public class GroupServiceImpl implements GroupService {
 
         // 삭제하려는 멤버가 그룹에 존재하는지 확인
         if (userQuerySnapshot.get().getDocuments().isEmpty()) {
-            throw new Exception("삭제하려는 유저가 존재하지 않습니다.");
+            throw new Exception("해당 유저는 존재하지 않습니다.");
         }
 
         String groupKey = userQuerySnapshot.get().getDocuments().getFirst().getString("groupKey");
@@ -98,7 +124,7 @@ public class GroupServiceImpl implements GroupService {
 
         // 그룹 이름이 데이터베이스에 존재하는지 확인
         if (querySnapshot.get().getDocuments().isEmpty()) {
-            throw new Exception("삭제하려는 그룹이 존재하지 않습니다.");
+            throw new Exception("해당 그룹은 존재하지 않습니다.");
         }
 
         QueryDocumentSnapshot document = querySnapshot.get().getDocuments().getFirst();
@@ -116,7 +142,7 @@ public class GroupServiceImpl implements GroupService {
                 return group; // 수정한 그룹을 반환
             }
         }
-        throw new Exception("해당하는 그룹은 존재하지 않습니다.");
+        throw new Exception("해당 멤버는 존재하지 않습니다.");
     }
 
     // 그룹 정보 수정
@@ -128,12 +154,13 @@ public class GroupServiceImpl implements GroupService {
     }
 
     public boolean deleteGroup(UserInfo user) throws Exception {
-        // 그룹 이름이 Firestore에 존재하는지 확인
+        // 그룹이 존재하는지 확인
         Query groupQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", user.getGroupKey());
         ApiFuture<QuerySnapshot> querySnapshot = groupQuery.get();
 
+        // 그룹이 존재하지 않으면 예외처리
         if (querySnapshot.get().getDocuments().isEmpty()) {
-            throw new Exception("삭제하려는 그룹이 존재하지 않습니다.");
+            throw new Exception("해당 그룹이 존재하지 않습니다.");
         }
 
         for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
@@ -151,7 +178,7 @@ public class GroupServiceImpl implements GroupService {
                 // 그룹을 삭제
                 document.getReference().delete();
             } else {
-                throw new Exception("해당 그룹 마스터의 이메일이 일치하지 않습니다.");
+                throw new Exception("해당 그룹의 그룹 마스터가 아닙니다.");
             }
         }
         return false;
@@ -180,7 +207,7 @@ public class GroupServiceImpl implements GroupService {
         if(documentSnapshot.exists()){
             return documentSnapshot.toObject(Group.class);
         } else {
-            throw new Exception("해당하는 유저가 존재하지 않습니다.");
+            throw new Exception("해당 유저는 존재하지 않습니다.");
         }
     }
 
@@ -195,7 +222,7 @@ public class GroupServiceImpl implements GroupService {
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
 
         if (documents.isEmpty()) {
-            throw new Exception("해당 그룹이 존재하지 않습니다.");
+            throw new Exception("해당 그룹은 존재하지 않습니다.");
         }
 
         // 문서가 존재하면, 그룹 멤버의 이름을 리스트에 추가
@@ -221,7 +248,7 @@ public class GroupServiceImpl implements GroupService {
             QueryDocumentSnapshot document = documents.getFirst();
             return document.toObject(Group.class).getGroupName();
         } else {
-            throw new Exception("해당하는 문서가 존재하지 않습니다.");
+            throw new Exception("해당 문서는 존재하지 않습니다.");
         }
     }
 
@@ -234,7 +261,7 @@ public class GroupServiceImpl implements GroupService {
         ApiFuture<QuerySnapshot> querySnapshot = groupQuery.get();
         // 그룹이 파이어베이스에 존재하는지 확인
         if (querySnapshot.get().getDocuments().isEmpty()) {
-            throw new Exception("해당 그룹이 존재하지 않습니다.");
+            throw new Exception("해당 그룹은 존재하지 않습니다.");
         }
 
         QueryDocumentSnapshot groupDocument = querySnapshot.get().getDocuments().getFirst();
@@ -250,6 +277,6 @@ public class GroupServiceImpl implements GroupService {
                 return group; // 수정한 그룹을 반환합니다.
             }
         }
-        throw new Exception("해당하는 그룹 멤버가 존재하지 않습니다.");
+        throw new Exception("해당 그룹 멤버는 존재하지 않습니다.");
     }
 }
