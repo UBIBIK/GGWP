@@ -388,7 +388,9 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
         // 경로 설정 버튼
         builder.setPositiveButton("경로 설정", (dialog, id) -> {
             Intent intent = new Intent(your_new_home.this, find_destination.class);
-            intent.putExtra("location", address);
+            intent.putExtra("address", address);
+            intent.putExtra("latitude", location.latitude);
+            intent.putExtra("longitude", location.longitude);
             startActivity(intent);
         });
 
