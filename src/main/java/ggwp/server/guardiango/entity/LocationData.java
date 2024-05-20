@@ -6,8 +6,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LocationData {
-    private double latitude;
-    private double longitude;
+    private double latitude; // 위도
+    private double longitude; // 경도
 
     public LocationData() {}
 
