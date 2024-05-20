@@ -20,12 +20,10 @@ public class GroupServiceImpl implements GroupService {
     public static final String COLLECTION_NAME = "groups";
     Firestore firestore = FirestoreClient.getFirestore();
     private final UserService userService;
-    private final UserReportService userReportService;
 
     @Autowired
     public GroupServiceImpl(UserService userService, UserReportService userReportService, UserReportService userReportService1) {
         this.userService = userService;
-        this.userReportService = userReportService1;
     }
 
     // 그룹 추가
@@ -274,7 +272,7 @@ public class GroupServiceImpl implements GroupService {
                 member.put("latitude", user.getLocationInfo().get("latitude"));
                 member.put("longitude", user.getLocationInfo().get("longitude"));
                 updateGroup(group);
-                return group; // 수정한 그룹을 반환합니다.
+                return group; // 수정한 그룹을 반환
             }
         }
         throw new Exception("해당 그룹 멤버는 존재하지 않습니다.");

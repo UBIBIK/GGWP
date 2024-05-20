@@ -3,6 +3,7 @@ package ggwp.server.guardiango.service.impl;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
+import ggwp.server.guardiango.entity.LocationData;
 import ggwp.server.guardiango.entity.Report;
 import ggwp.server.guardiango.entity.UserInfo;
 import ggwp.server.guardiango.entity.UserReport;
@@ -136,5 +137,41 @@ public class UserReportServiceImpl implements UserReportService {
         }
     }
 
+    @Override
+    public Report getUserReport(LocationData reportLocation, UserInfo user) throws Exception {
+        // 신고 목록이 존재하는지 확인
+        Query UserReportQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", user.getGroupKey());
+        ApiFuture<QuerySnapshot> querySnapshot = UserReportQuery.get();
 
+        // 신고 목록이 존재하지 않으면 예외처리
+        if (querySnapshot.get().getDocuments().isEmpty()) {
+            throw new Exception("해당 그룹이 존재하지 않습니다.");
+        }
+
+        // 문서 결과를 가져옴
+        List<QueryDocumentSnapshot> documents = querySnapshot.get().getDocuments();
+
+        if(!documents.isEmpty()) {
+            // 첫 번째 문서를 가져옴
+            QueryDocumentSnapshot document = documents.getFirst();
+
+            // 문서를 객체로 변환
+            UserReport userReport = document.toObject(UserReport.class);
+            ArrayList<Map<String, Object>> reports = userReport.getReport();
+            // 위도와 경도가 일치하는 요소 조회
+            Report findReport = new Report();
+            for (Map<String, Object> report : reports) {
+                if (report.get("latitude").equals(reportLocation.getLatitude()) && report.get("longitute").equals(reportLocation.getLongitude())) {
+                    findReport.setLatitude(reportLocation.getLatitude());
+                    findReport.setLongitude(reportLocation.getLongitude());
+                    findReport.setImage(report.get("image").toString());
+//                    findReport.setTime(report.get("time").toString());
+                }
+            }
+
+            return findReport;
+        } else {
+            throw new Exception("해당 신고를 찾을 수 없습니다.");
+        }
+    }
 }

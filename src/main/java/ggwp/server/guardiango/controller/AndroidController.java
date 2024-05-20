@@ -1,8 +1,7 @@
 package ggwp.server.guardiango.controller;
 
-import ggwp.server.guardiango.entity.Group;
-import ggwp.server.guardiango.entity.User;
-import ggwp.server.guardiango.entity.UserInfo;
+import ggwp.server.guardiango.entity.*;
+import ggwp.server.guardiango.service.ElementSerivce;
 import ggwp.server.guardiango.service.GroupService;
 import ggwp.server.guardiango.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +23,13 @@ public class AndroidController {
 
     private final UserService userService;
     private final GroupService groupService;
+    private final ElementSerivce elementSerivce;
 
     @Autowired
-    public AndroidController(UserService userService, GroupService groupService) {
+    public AndroidController(UserService userService, GroupService groupService, ElementSerivce elementSerivce) {
         this.userService = userService;
         this.groupService = groupService;
+        this.elementSerivce = elementSerivce;
     }
 
     @PostMapping("/save-user") // 안드로이드 스튜디오를 통해 받은 사용자 객체를 파이어베이스에 저장
@@ -166,5 +167,10 @@ public class AndroidController {
     @PostMapping("/save-location")
     public ResponseEntity<Group> updateLocation(@RequestBody UserInfo user) throws Exception {
         return ResponseEntity.ok(groupService.updateLocationInfo(user));
+    }
+
+    @PostMapping("/get-Element")
+    public ResponseEntity<Element> getElement() throws Exception {
+        return ResponseEntity.ok(elementSerivce.getElement());
     }
 }

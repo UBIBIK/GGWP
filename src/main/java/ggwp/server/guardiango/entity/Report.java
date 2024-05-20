@@ -8,8 +8,8 @@ import java.util.Date;
 @Getter
 @Setter
 public class Report {
-    private double latitude;
-    private double longitude;
+    private double latitude; // 위도
+    private double longitude; // 경도
     private String image;
     private Date time;
 
@@ -26,5 +26,9 @@ public class Report {
         this.image = image;
         // 현재 시간을 타임스탬프로 추가
         this.time = new Date();
+    }
+
+    public Report() {
+
     }
 }
