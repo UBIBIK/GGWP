@@ -12,9 +12,11 @@ public interface UserReportService {
 
     UserReport addReport(Report report, UserInfo user) throws Exception; // 사용자 신고 정보 추가
 
-    String updateUserReport(UserReport userReport) throws Exception; // 사용자 신고 목록 수정
+    void updateUserReport(UserReport userReport) throws Exception; // 사용자 신고 목록 수정
 
     UserReport deleteReport(Report report, UserInfo user) throws Exception; // 사용자 신고 정보 삭제
+
+    boolean deleteUserReport(UserInfo user) throws Exception; // 사용자 신고 목록 수정
     
-    Report getUserReport(LocationData reportLocation, UserInfo user) throws Exception; // 사용자 신고 정보 조회
+    Report getReport(LocationData reportLocation, UserInfo user) throws Exception; // 사용자 신고 정보 조회
 }

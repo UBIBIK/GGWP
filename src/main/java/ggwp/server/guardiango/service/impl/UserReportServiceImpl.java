@@ -3,10 +3,7 @@ package ggwp.server.guardiango.service.impl;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
-import ggwp.server.guardiango.entity.LocationData;
-import ggwp.server.guardiango.entity.Report;
-import ggwp.server.guardiango.entity.UserInfo;
-import ggwp.server.guardiango.entity.UserReport;
+import ggwp.server.guardiango.entity.*;
 import ggwp.server.guardiango.service.UserReportService;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +12,7 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class UserReportServiceImpl implements UserReportService {
-    public static final String COLLECTION_NAME = "userReport";
+    public static final String COLLECTION_NAME = "userReports";
     Firestore firestore = FirestoreClient.getFirestore();
 
     @Override
@@ -61,19 +58,10 @@ public class UserReportServiceImpl implements UserReportService {
             // 문서를 객체로 변환
             UserReport userReport = document.toObject(UserReport.class);
 
-            // 새로운 신고 정보를 생성
-            Map<String, Object> newUserReport = new HashMap<>();
-            newUserReport.put("reporterName", user.getUserName());
-            newUserReport.put("latitude", report.getLatitude());
-            newUserReport.put("longitude", report.getLongitude());
-            newUserReport.put("reportTime", report.getTime());
-
-            if(!report.getImage().isEmpty()) {
-                newUserReport.put("image", report.getImage());
-            }
+            report.setReporterName(user.getUserName());
 
             // 신고 목록에 새로운 신고 정보를 추가
-            userReport.getReport().add(newUserReport);
+            userReport.getReport().add(report);
 
             // 그룹 정보를 업데이트
             updateUserReport(userReport);
@@ -89,10 +77,10 @@ public class UserReportServiceImpl implements UserReportService {
 
     // 신고 정보 수정
     @Override
-    public String updateUserReport(UserReport userReport) throws Exception {
+    public void updateUserReport(UserReport userReport) throws Exception {
         ApiFuture<WriteResult> future =
                 firestore.collection(COLLECTION_NAME).document(userReport.getReportName()).set(userReport);
-        return future.get().getUpdateTime().toString();
+        future.get();
     }
 
     @Override
@@ -116,12 +104,12 @@ public class UserReportServiceImpl implements UserReportService {
             // 문서를 객체로 변환
             UserReport userReport = document.toObject(UserReport.class);
 
-            List<Map<String, Object>> reports = userReport.getReport();
+            ArrayList<Report> reports = userReport.getReport();
 
             // 위도와 경도가 일치하는 요소를 찾아 삭제
             boolean isRemoved = reports.removeIf(findReport ->
-                    (double) findReport.get("latitude") == report.getLatitude() &&
-                            (double) findReport.get("longitude") == report.getLongitude()
+                    findReport.getLatitude() == report.getLatitude() &&
+                            findReport.getLongitude() == report.getLongitude()
             );
 
             if(isRemoved) {
@@ -138,40 +126,57 @@ public class UserReportServiceImpl implements UserReportService {
     }
 
     @Override
-    public Report getUserReport(LocationData reportLocation, UserInfo user) throws Exception {
+    public boolean deleteUserReport(UserInfo user) throws Exception {
+        // 신고 목록이 존재하는지 확인
+        Query groupQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", user.getGroupKey());
+        ApiFuture<QuerySnapshot> querySnapshot = groupQuery.get();
+
+        // 그룹이 존재하지 않으면 예외처리
+        if (querySnapshot.get().getDocuments().isEmpty()) {
+            throw new Exception("해당 그룹이 존재하지 않습니다.");
+        }
+
+        for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+            String groupKey = document.getString("groupKey");
+
+            // 해당 그룹의 신고 목록 삭제
+            if(Objects.equals(groupKey, user.getGroupKey())) {
+                document.getReference().delete();
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    @Override
+    public Report getReport(LocationData reportLocation, UserInfo user) throws Exception {
         // 신고 목록이 존재하는지 확인
         Query UserReportQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", user.getGroupKey());
         ApiFuture<QuerySnapshot> querySnapshot = UserReportQuery.get();
 
-        // 신고 목록이 존재하지 않으면 예외처리
+        // 그룹키에 해당하는 신고 목록이 존재하지 않으면 예외처리
         if (querySnapshot.get().getDocuments().isEmpty()) {
-            throw new Exception("해당 그룹이 존재하지 않습니다.");
+            throw new Exception("그룹키에 해당하는 신고 목록이 존재하지 않습니다.");
         }
 
         // 문서 결과를 가져옴
         List<QueryDocumentSnapshot> documents = querySnapshot.get().getDocuments();
 
-        if(!documents.isEmpty()) {
+        if (!documents.isEmpty()) {
             // 첫 번째 문서를 가져옴
             QueryDocumentSnapshot document = documents.getFirst();
 
-            // 문서를 객체로 변환
-            UserReport userReport = document.toObject(UserReport.class);
-            ArrayList<Map<String, Object>> reports = userReport.getReport();
-            // 위도와 경도가 일치하는 요소 조회
-            Report findReport = new Report();
-            for (Map<String, Object> report : reports) {
-                if (report.get("latitude").equals(reportLocation.getLatitude()) && report.get("longitute").equals(reportLocation.getLongitude())) {
-                    findReport.setLatitude(reportLocation.getLatitude());
-                    findReport.setLongitude(reportLocation.getLongitude());
-                    findReport.setImage(report.get("image").toString());
-//                    findReport.setTime(report.get("time").toString());
+            // 문서를 report 객체로 변환
+            ArrayList<Report> reports = document.toObject(UserReport.class).getReport();
+            for (Report report : reports) {
+                // 위도와 경도가 일치하는 객체 반환
+                if (report.getLatitude() == reportLocation.getLatitude() && report.getLongitude() == reportLocation.getLongitude()) {
+                    return report;
                 }
             }
-
-            return findReport;
-        } else {
-            throw new Exception("해당 신고를 찾을 수 없습니다.");
+            throw new Exception("해당 신고 정보가 존재하지 않습니다.");
         }
+        throw new Exception("신고 목록이 존재하지 않습니다.");
     }
 }

@@ -25,16 +25,14 @@ public class CCTVServiceImpl implements CCTVService {
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
 
         if (documents.isEmpty()) {
-            System.out.println("No CCTV data found in Firestore.");
+           throw new Exception("CCTV 데이터를 찾을 수 없습니다.");
         } else {
-            System.out.println("Retrieved CCTV data from Firestore:");
             for (QueryDocumentSnapshot document : documents) {
                 if (document.exists()) {
                     CCTV cctv = document.toObject(CCTV.class);
-                    System.out.println(cctv); // CCTV 객체의 상태를 출력
                     list.add(cctv);
                 } else {
-                    System.out.println("Document does not exist: " + document.getId());
+                    System.out.println("해당 문서가 존재하지 않습니다." + document.getId());
                 }
             }
         }

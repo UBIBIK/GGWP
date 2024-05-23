@@ -7,7 +7,6 @@ import ggwp.server.guardiango.entity.Group;
 import ggwp.server.guardiango.entity.User;
 import ggwp.server.guardiango.entity.UserInfo;
 import ggwp.server.guardiango.service.GroupService;
-import ggwp.server.guardiango.service.UserReportService;
 import ggwp.server.guardiango.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,7 @@ public class GroupServiceImpl implements GroupService {
     private final UserService userService;
 
     @Autowired
-    public GroupServiceImpl(UserService userService, UserReportService userReportService, UserReportService userReportService1) {
+    public GroupServiceImpl(UserService userService) {
         this.userService = userService;
     }
 
@@ -45,9 +44,6 @@ public class GroupServiceImpl implements GroupService {
 
         // 그룹 정보 저장
         ApiFuture<WriteResult> future = firestore.collection(COLLECTION_NAME).document(group.getGroupName()).set(group);
-
-        /*// 유저 신고 목록 생성
-        userReportService.insertUserReport(user);*/
 
         // 성공적으로 저장되었을 때의 시간을 반환
         return future.get().getUpdateTime().toString();
@@ -151,6 +147,7 @@ public class GroupServiceImpl implements GroupService {
         return future.get().getUpdateTime().toString();
     }
 
+    // 그룹 삭제
     public boolean deleteGroup(UserInfo user) throws Exception {
         // 그룹이 존재하는지 확인
         Query groupQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", user.getGroupKey());
@@ -176,7 +173,7 @@ public class GroupServiceImpl implements GroupService {
                 // 그룹을 삭제
                 document.getReference().delete();
             } else {
-                throw new Exception("해당 그룹의 그룹 마스터가 아닙니다.");
+                return false; //해당 그룹의 그룹 마스터가 아닙니다.
             }
         }
         return false;

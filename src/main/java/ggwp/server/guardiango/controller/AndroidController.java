@@ -3,6 +3,7 @@ package ggwp.server.guardiango.controller;
 import ggwp.server.guardiango.entity.*;
 import ggwp.server.guardiango.service.ElementSerivce;
 import ggwp.server.guardiango.service.GroupService;
+import ggwp.server.guardiango.service.UserReportService;
 import ggwp.server.guardiango.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +25,18 @@ public class AndroidController {
     private final UserService userService;
     private final GroupService groupService;
     private final ElementSerivce elementSerivce;
+    private final UserReportService userReportService;
 
     @Autowired
-    public AndroidController(UserService userService, GroupService groupService, ElementSerivce elementSerivce) {
+    public AndroidController(UserService userService, GroupService groupService, ElementSerivce elementSerivce, UserReportService userReportService) {
         this.userService = userService;
         this.groupService = groupService;
         this.elementSerivce = elementSerivce;
+        this.userReportService = userReportService;
     }
 
-    @PostMapping("/save-user") // 안드로이드 스튜디오를 통해 받은 사용자 객체를 파이어베이스에 저장
+    // 회원가입
+    @PostMapping("/save-user")
     @ResponseBody
     public void saveUser(@RequestBody User user) throws Exception {
         log.info("username={}",user.getUserName());
@@ -77,12 +81,12 @@ public class AndroidController {
                 tempGroup = new Group(userinfo.getUserName(), randomNumber());
                 tempGroup.setGroupMaster(user.getUserEmail());
                 userinfo.setGroupKey(tempGroup.getGroupKey());
-                log.info("reader={}", tempGroup.getGroupName());
-                log.info("code={}", tempGroup.getGroupKey());
                 groupService.insertGroup(tempGroup, userinfo);
                 user.setGroupKey(userinfo.getGroupKey());
                 userService.updateUser(user); // user 컬렉션에 해당 groupKey 정보 업데이트
                 groupService.updateLocationInfo(userinfo);
+                userReportService.insertUserReport(userinfo);
+                userReportService.insertUserReport(userinfo); // 사용자 신고 목록 생성
                 return ResponseEntity.ok(tempGroup);
             }
         }
@@ -90,7 +94,7 @@ public class AndroidController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(tempGroup);
     }
 
-    // 그룹참가
+    // 그룹 참가
     @PostMapping("/group-join")
     @ResponseBody
     public ResponseEntity<Group> groupJoin(@RequestBody UserInfo userinfo) throws Exception {
@@ -150,6 +154,7 @@ public class AndroidController {
     @PostMapping("/group-delete")
     @ResponseBody
     public void groupDelete(@RequestBody UserInfo user) throws Exception {
+        userReportService.deleteUserReport(user);
         groupService.deleteGroup(user);
     }
 
@@ -160,6 +165,7 @@ public class AndroidController {
         deleteUserName = deleteUserName.replaceAll("\"", "");
         log.info("삭제 할 멤버 이름 : {}", deleteUserName);
         Group updateGroup = groupService.deleteGroupMember(deleteUserName);
+
         return ResponseEntity.ok(updateGroup);
     }
 
@@ -169,8 +175,27 @@ public class AndroidController {
         return ResponseEntity.ok(groupService.updateLocationInfo(user));
     }
 
+    // 요소 정보 조회
     @PostMapping("/get-Element")
     public ResponseEntity<Element> getElement() throws Exception {
         return ResponseEntity.ok(elementSerivce.getElement());
+    }
+
+    // 사용자 신고 저장
+    @PostMapping("/add-userReport")
+    public ResponseEntity<UserReport> addUserReport(@RequestBody Report report, UserInfo user) throws Exception {
+        return ResponseEntity.ok(userReportService.addReport(report, user));
+    }
+
+    // 사용자 신고 삭제
+    @PostMapping("/report-delete")
+    public ResponseEntity<UserReport> reportDelete(@RequestBody Report report, UserInfo user) throws Exception {
+        return ResponseEntity.ok(userReportService.deleteReport(report, user));
+    }
+
+    // 사용자 신고 정보 조회
+    @PostMapping("/get-report")
+    public ResponseEntity<Report> getReport(@RequestBody LocationData deleteLocalDate, UserInfo user) throws Exception {
+        return ResponseEntity.ok(userReportService.getReport(deleteLocalDate, user));
     }
 }
