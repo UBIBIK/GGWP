@@ -15,9 +15,9 @@ public class Group {
     private String groupMaster;
     private ArrayList<Map<String, Object>> groupMember = new ArrayList<>();
 
-    public Group() {}
+    public Group() {} // GroupService를 위한 기본 생성자
 
-    public Group(String groupMemberName, String groupKey) {
+    public Group(String groupMemberName, String groupKey) { // GroupServiceTest를 위한 생성자
         this.groupName = groupMemberName + "의 그룹";
         this.groupKey = groupKey;
         Map<String, Object> memberInfo = new HashMap<>();

@@ -196,6 +196,12 @@ public class AndroidController {
     // 사용자 신고 정보 조회
     @PostMapping("/get-report")
     public ResponseEntity<Report> getReport(@RequestBody LocationData deleteLocalDate, UserInfo user) throws Exception {
-        return ResponseEntity.ok(userReportService.getReport(deleteLocalDate, user));
+        return ResponseEntity.ok(userReportService.getReportByLocation(deleteLocalDate, user));
+    }
+
+    // 신고 정보 조회
+    @PostMapping("/get-group-reports")
+    public ResponseEntity<List<Report>> getGroupReports(@RequestBody UserInfo user) throws Exception {
+        return ResponseEntity.ok(userReportService.getReportsLocationByGroupKey(user.getGroupKey()));
     }
 }

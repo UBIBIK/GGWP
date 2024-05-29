@@ -148,9 +148,37 @@ public class UserReportServiceImpl implements UserReportService {
         return false;
     }
 
-
     @Override
-    public Report getReport(LocationData reportLocation, UserInfo user) throws Exception {
+    public List<Report> getReportsLocationByGroupKey(String groupKey) throws Exception {
+        List<Report> reports = new ArrayList<>();
+
+        // Firestore에서 그룹 이름으로 문서를 조회
+        ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", groupKey).get();
+        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+
+        if (documents.isEmpty()) {
+            throw new Exception("해당 그룹은 존재하지 않습니다.");
+        }
+
+        // 문서가 존재하면 해당 객체를 리스트 형태로 반환
+        QueryDocumentSnapshot document = documents.getFirst();
+        List<Map<String, Object>> reportDateList = (List<Map<String, Object>>) document.get("report");
+        if (reportDateList != null) {
+            for (Map<String, Object> reportData : reportDateList) {
+                Report report = new Report();
+                report.setLatitude((Double) reportData.get("latitude"));
+                report.setLongitude((Double) reportData.get("longitude"));
+                reports.add(report);
+            }
+        }
+
+        if (reports.isEmpty()) {
+            throw new Exception("해당 그룹의 신고 목록이 존재하지 않습니다.");
+        }
+        return reports;
+    }
+    @Override
+    public Report getReportByLocation(LocationData reportLocation, UserInfo user) throws Exception {
         // 신고 목록이 존재하는지 확인
         Query UserReportQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", user.getGroupKey());
         ApiFuture<QuerySnapshot> querySnapshot = UserReportQuery.get();

@@ -8,11 +8,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @SpringBootTest
 public class UserReportServiceTest {
-    private static final String TEST_GROUP_MEMBER_NAME = "test1";
+    private static final String TEST_GROUP_MEMBER_NAME = "test2";
     private static final String TEST_GROUP_KEY = "8et62mcnqqp5qk66";
 
     @Autowired
@@ -31,7 +32,7 @@ public class UserReportServiceTest {
         UserInfo testUserInfo = new UserInfo();
         testUserInfo.setUserName(TEST_GROUP_MEMBER_NAME);
         testUserInfo.setGroupKey(TEST_GROUP_KEY);
-        Report report = new Report(34.793692, 126.3679059, "123");
+        Report report = new Report(33.132, 123.341, "1234", "신호등 고장");
         userReportService.addReport(report, testUserInfo);
     }
 
@@ -53,16 +54,25 @@ public class UserReportServiceTest {
     }
 
     @Test
+    public void getReportsLocationByGroupKeyTest() throws Exception {
+        List<Report> reports =  userReportService.getReportsLocationByGroupKey(TEST_GROUP_KEY);
+        for(Report report : reports) {
+            System.out.println("신고 위도 : " + report.getLatitude() + ", 경도 : " + report.getLongitude());
+        }
+    }
+
+    @Test
     public void getReportTest() throws Exception {
         UserInfo testUserInfo = new UserInfo();
         testUserInfo.setUserName(TEST_GROUP_MEMBER_NAME);
         testUserInfo.setGroupKey(TEST_GROUP_KEY);
         LocationData findLocationData = new LocationData();
-        findLocationData.setLatitude(34.793692);
-        findLocationData.setLongitude(126.3679059);
-        Report report = userReportService.getReport(findLocationData, testUserInfo);
+        findLocationData.setLatitude(34.232);
+        findLocationData.setLongitude(136.3123);
+        Report report = userReportService.getReportByLocation(findLocationData, testUserInfo);
         System.out.println("신고자 이름 : " + report.getReporterName()
                 + ", 신고 이미지 : " + report.getImage() + ", 위도 : " + report.getLatitude()
-                + ", 경도 : " + report.getLongitude() + ", 신고 시간 : " + report.getTime());
+                + ", 경도 : " + report.getLongitude() + ", 신고 시간 : " + report.getTime()
+                + ", 신고 설명 : " + report.getDescription());
     }
 }

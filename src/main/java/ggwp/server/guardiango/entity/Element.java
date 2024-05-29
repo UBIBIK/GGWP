@@ -9,5 +9,9 @@ import java.util.List;
 @Setter
 @Getter
 public class Element {
-    List<CCTV> cctvs = new ArrayList<CCTV>();
+    List<CCTV> cctvs = new ArrayList<>();
+    List<SchoolZone> schoolZones = new ArrayList<>();
+    List<Crime> crimes = new ArrayList<>();
+    List<EmergencyBell> emergencyBells = new ArrayList<>();
+    List<ConvenienceStore> convenienceStores = new ArrayList<>();
 }

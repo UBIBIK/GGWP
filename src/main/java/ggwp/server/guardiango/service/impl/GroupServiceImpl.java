@@ -194,7 +194,7 @@ public class GroupServiceImpl implements GroupService {
 
     // 그룹 키로 그룹 정보 조회
     @Override
-    public Group getGroupByGroupCode(String groupKey) throws Exception {
+    public Group getGroupByGroupKey(String groupKey) throws Exception {
         DocumentReference documentReference =
                 firestore.collection(COLLECTION_NAME).document(groupKey);
         ApiFuture<DocumentSnapshot> apiFuture = documentReference.get();
@@ -209,11 +209,11 @@ public class GroupServiceImpl implements GroupService {
 
     // 그룹 코드로 그룹원 조회
     @Override
-    public List<String> getGroupMemberByGroupCode(String groupCode) throws Exception {
+    public List<String> getGroupMemberNameByGroupKey(String groupKey) throws Exception {
         List<String> groupMemberNames = new ArrayList<>();
 
         // Firestore에서 그룹 이름으로 문서를 조회
-        ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).whereEqualTo("groupCode", groupCode).get();
+        ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", groupKey).get();
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
 
         if (documents.isEmpty()) {
@@ -221,29 +221,29 @@ public class GroupServiceImpl implements GroupService {
         }
 
         // 문서가 존재하면, 그룹 멤버의 이름을 리스트에 추가
-        for (QueryDocumentSnapshot document : documents) {
-            List<Map<String, Object>> groupMembers = (List<Map<String, Object>>) document.get("groupMember");
-            if (groupMembers != null) {
-                for (Map<String, Object> member : groupMembers) {
-                    groupMemberNames.add((String) member.get("groupMemberName"));
-                }
+        QueryDocumentSnapshot document = documents.getFirst();
+        List<Map<String, Object>> groupMembers = (List<Map<String, Object>>) document.get("groupMember");
+        if (groupMembers != null) {
+            for (Map<String, Object> member : groupMembers) {
+                groupMemberNames.add((String) member.get("groupMemberName"));
             }
+            return groupMemberNames;
         }
-        return groupMemberNames;
+        throw new Exception("해당 그룹 멤버가 존재하지 않습니다.");
     }
 
     // 그룹 코드로 그룹 이름 조회
     @Override
-    public String getGroupNameByGroupCode(String groupCode) throws Exception {
-        // Firestore에서 특정 필드로 문서를 조회합니다.
-        ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).whereEqualTo("groupCode", groupCode).get();
+    public String getGroupNameByGroupKey(String groupKey) throws Exception {
+        // 그룹 키로 파이어베이스에서 그룹 조회
+        ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", groupKey).get();
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
 
         if (!documents.isEmpty()) {
             QueryDocumentSnapshot document = documents.getFirst();
             return document.toObject(Group.class).getGroupName();
         } else {
-            throw new Exception("해당 문서는 존재하지 않습니다.");
+            throw new Exception("해당 그룹은 존재하지 않습니다.");
         }
     }
 

@@ -13,6 +13,8 @@ public class UserReport {
     private String groupKey;
     private ArrayList<Report> report = new ArrayList<>();
 
+    public UserReport() {} // UserReportService를 위한 기본 생성자
+    
     public UserReport(String reportName, String groupKey) {
         this.reportName = reportName + " 그룹의 신고 목록";
         this.groupKey = groupKey;

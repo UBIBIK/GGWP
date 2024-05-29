@@ -16,7 +16,7 @@ public class GroupServiceTest {
     private static final String TEST_GROUP_MASTER_NAME = "test1";
     private static final String TEST_GROUP_MEMBER_EMAIL = "test2";
     private static final String TEST_GROUP_MEMBER_NAME = "test2";
-    private static final String TEST_GROUP_KEY = "09bokfesd81vcc60";
+    private static final String TEST_GROUP_KEY = "8et62mcnqqp5qk66";
 
     @Autowired
     private GroupService groupService;
@@ -66,15 +66,15 @@ public class GroupServiceTest {
     // 그룹 키로 그룹 정보 조회 테스트
     @Test
     public void getGroupByGroupCodeTest() throws Exception {
-        Group group = groupService.getGroupByGroupCode(TEST_GROUP_KEY);
+        Group group = groupService.getGroupByGroupKey(TEST_GROUP_KEY);
         System.out.println(group.getGroupName());
         System.out.println(group.getGroupKey());
     }
 
     // 그룹 코드로 그룹원 조회 테스트
     @Test
-    void getGroupMemberByGroupKeyTest() throws Exception {
-        List<String> groupMemberNames = groupService.getGroupMemberByGroupCode(TEST_GROUP_KEY);
+    void getGroupMemberNameByGroupKeyTest() throws Exception {
+        List<String> groupMemberNames = groupService.getGroupMemberNameByGroupKey(TEST_GROUP_KEY);
 
         for (String name : groupMemberNames) {
             System.out.println(name);
@@ -84,7 +84,7 @@ public class GroupServiceTest {
     // 그룹 코드로 그룹 이름 조회 테스트
     @Test
     void getGroupNameByGroupKeyTest() throws Exception {
-        String groupName = groupService.getGroupNameByGroupCode(TEST_GROUP_KEY);
+        String groupName = groupService.getGroupNameByGroupKey(TEST_GROUP_KEY);
         System.out.println(groupName);
     }
 

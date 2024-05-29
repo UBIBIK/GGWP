@@ -19,11 +19,11 @@ public interface GroupService {
 
     List<Group> getGroups() throws ExecutionException, InterruptedException; // 모든 그룹 조회
 
-    Group getGroupByGroupCode(String groupKey) throws Exception; // 그룹 키로 그룹 정보 조회
+    Group getGroupByGroupKey(String groupKey) throws Exception; // 그룹 키로 그룹 정보 조회
+   
+    List<String> getGroupMemberNameByGroupKey(String groupKey) throws Exception;  // 그룹 코드로 그룹원 이름 조회
 
-    List<String> getGroupMemberByGroupCode(String groupName) throws Exception; // 그룹 코드로 그룹원 조회
-
-    String getGroupNameByGroupCode(String groupCode) throws Exception; // 그룹 코드로 그룹 이름 조회
+    String getGroupNameByGroupKey(String groupKey) throws Exception; // 그룹 코드로 그룹 이름 조회
 
     Group updateLocationInfo(UserInfo user) throws Exception; // 그룹 멤버의 본인 위치 업데이트
 }
