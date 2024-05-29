@@ -250,7 +250,6 @@ public class GroupServiceImpl implements GroupService {
     // 그룹 멤버의 본인 위치 업데이트
     @Override
     public Group updateLocationInfo(UserInfo user) throws Exception {
-        Group resultGroup = null;
         // 그룹 키로 파이어베이스에서 그룹 조회
         Query groupQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", user.getGroupKey());
         ApiFuture<QuerySnapshot> querySnapshot = groupQuery.get();
