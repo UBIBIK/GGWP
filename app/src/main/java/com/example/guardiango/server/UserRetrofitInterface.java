@@ -1,5 +1,6 @@
 package com.example.guardiango.server;
 
+import com.example.guardiango.entity.Element;
 import com.example.guardiango.entity.Group;
 import com.example.guardiango.entity.LocationData;
 import com.example.guardiango.entity.UserDTO;
@@ -34,4 +35,7 @@ public interface UserRetrofitInterface {
 
     @POST("save-location")
     Call<Group> updateLocation(@Body UserInfo user);
+
+    @POST("get-element")
+    Call<Element> getElementData();
 }

@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".screen.find_destination">
 
     <TextView
         android:id="@+id/statusBar"
@@ -68,5 +69,17 @@
             android:text="경로 편집"
             android:textColor="#45A116" />
     </LinearLayout>
+
+    <!-- 가로 슬라이드 RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/switchRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@id/buttonPanel"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:padding="8dp"
+        android:layout_marginBottom="16dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

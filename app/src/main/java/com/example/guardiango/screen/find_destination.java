@@ -7,10 +7,19 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.guardiango.Custom.SwitchAdapter;
+import com.example.guardiango.Custom.SwitchItem;
 import com.example.guardiango.R;
+import com.example.guardiango.entity.CCTV;
+import com.example.guardiango.entity.Element;
+import com.example.guardiango.server.RetrofitClient;
+import com.example.guardiango.server.UserRetrofitInterface;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -35,7 +44,11 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class find_destination extends AppCompatActivity implements OnMapReadyCallback {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class find_destination extends AppCompatActivity implements OnMapReadyCallback, SwitchAdapter.OnSwitchCheckedChangeListener {
 
     private MapView mapView;
     private GoogleMap googleMap;
@@ -48,7 +61,12 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
     private Polyline currentPolyline;
     private List<LatLng> routePoints;
     private List<LatLng> waypoints;
+    private final List<Marker> cctvMarkers = new ArrayList<>();
+    private final List<Marker> schoolZoneMarkers = new ArrayList<>();
+    private final List<Marker> crimeAreaMarkers = new ArrayList<>();
+    private final List<Marker> accidentProneAreaMarkers = new ArrayList<>();
     private static final String API_KEY = "Qo2Dzd0MGI2AyknkLTB8U6jqfAz5UwUA3gaqwxjj";
+    private List<CCTV> cctvList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +82,11 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
 
         statusBar = findViewById(R.id.statusBar);
 
+        RecyclerView switchRecyclerView = findViewById(R.id.switchRecyclerView);
+        switchRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        SwitchAdapter switchAdapter = new SwitchAdapter(getSwitchItems(), this);
+        switchRecyclerView.setAdapter(switchAdapter);
+
         waypoints = new ArrayList<>();
 
         Button setDestinationButton = findViewById(R.id.setDestinationButton);
@@ -71,9 +94,10 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
             if (destinationMarker != null) {
                 destinationMarker.remove();
             }
+
             statusBar.setText("목적지의 위치를 터치해주세요");
             isDestinationSetMode = true;
-            waypoints.clear(); // Clear waypoints when setting a new destination
+            waypoints.clear(); // 새로운 목적지를 설정할 때 경유지를 초기화
         });
 
         Button editRouteButton = findViewById(R.id.editRouteButton);
@@ -85,6 +109,62 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
                 statusBar.setText("먼저 경로를 설정해주세요");
             }
         });
+
+        fetchElementData(); // 화면이 실행될 때 데이터 가져오기
+    }
+
+    private void fetchElementData() {
+        UserRetrofitInterface apiService = RetrofitClient.getUserRetrofitInterface();
+        Call<Element> call = apiService.getElementData();
+        call.enqueue(new Callback<Element>() {
+            @Override
+            public void onResponse(Call<Element> call, Response<Element> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    cctvList = response.body().getCctvs();
+                    Toast.makeText(find_destination.this, "데이터 가져오기 성공", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(find_destination.this, "데이터 가져오기 실패", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Element> call, Throwable t) {
+                Toast.makeText(find_destination.this, "서버 요청 실패: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+
+    private List<SwitchItem> getSwitchItems() {
+        List<SwitchItem> switchItems = new ArrayList<>();
+        switchItems.add(new SwitchItem("CCTV", false));
+        switchItems.add(new SwitchItem("어린이 보호구역", false));
+        switchItems.add(new SwitchItem("범죄자 거주지", false));
+        switchItems.add(new SwitchItem("사고다발지역", false));
+        return switchItems;
+    }
+
+    @Override
+    public void onSwitchCheckedChanged(int position, boolean isChecked) {
+        switch (position) {
+            case 0:
+                toggleCCTVMarkers(isChecked);
+                break;
+            case 1:
+                toggleSchoolZoneMarkers(isChecked);
+                break;
+            case 2:
+                toggleCrimeAreaMarkers(isChecked);
+                break;
+            case 3:
+                toggleAccidentProneAreaMarkers(isChecked);
+                break;
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 
     @Override
@@ -158,6 +238,7 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
                     currentPolyline = googleMap.addPolyline(result);
                     routePoints = result.getPoints();
                     statusBar.setText("경로 표시 완료");
+
                 } else {
                     statusBar.setText("경로를 불러오는 데 실패했습니다.");
                 }
@@ -211,6 +292,99 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
         }
 
         return options.width(10).color(Color.BLUE);
+    }
+
+    private void toggleCCTVMarkers(boolean show) {
+        if (show) {
+            for (CCTV cctv : cctvList) {
+                Marker marker = googleMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(cctv.getLatitude(), cctv.getLongitude()))
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                        .title("CCTV")
+                        .snippet(cctv.getAddress()));
+                cctvMarkers.add(marker);
+            }
+        } else {
+            for (Marker marker : cctvMarkers) {
+                marker.remove();
+            }
+            cctvMarkers.clear();
+        }
+    }
+
+    private void toggleSchoolZoneMarkers(boolean show) {
+        if (show) {
+            for (LatLng location : getSchoolZoneLocations()) {
+                Marker marker = googleMap.addMarker(new MarkerOptions()
+                        .position(location)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+                        .title("어린이 보호구역"));
+                schoolZoneMarkers.add(marker);
+            }
+        } else {
+            for (Marker marker : schoolZoneMarkers) {
+                marker.remove();
+            }
+            schoolZoneMarkers.clear();
+        }
+    }
+
+    private void toggleCrimeAreaMarkers(boolean show) {
+        if (show) {
+            for (LatLng location : getCrimeAreaLocations()) {
+                Marker marker = googleMap.addMarker(new MarkerOptions()
+                        .position(location)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                        .title("범죄자 거주지"));
+                crimeAreaMarkers.add(marker);
+            }
+        } else {
+            for (Marker marker : crimeAreaMarkers) {
+                marker.remove();
+            }
+            crimeAreaMarkers.clear();
+        }
+    }
+
+    private void toggleAccidentProneAreaMarkers(boolean show) {
+        if (show) {
+            for (LatLng location : getAccidentProneAreaLocations()) {
+                Marker marker = googleMap.addMarker(new MarkerOptions()
+                        .position(location)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+                        .title("사고다발지역"));
+                accidentProneAreaMarkers.add(marker);
+            }
+        } else {
+            for (Marker marker : accidentProneAreaMarkers) {
+                marker.remove();
+            }
+            accidentProneAreaMarkers.clear();
+        }
+    }
+
+    private List<LatLng> getSchoolZoneLocations() {
+        // 실제 데이터로 대체
+        List<LatLng> locations = new ArrayList<>();
+        locations.add(new LatLng(latitude - 0.001, longitude - 0.001));
+        locations.add(new LatLng(latitude - 0.002, longitude - 0.002));
+        return locations;
+    }
+
+    private List<LatLng> getCrimeAreaLocations() {
+        // 실제 데이터로 대체
+        List<LatLng> locations = new ArrayList<>();
+        locations.add(new LatLng(latitude + 0.003, longitude + 0.003));
+        locations.add(new LatLng(latitude + 0.004, longitude + 0.004));
+        return locations;
+    }
+
+    private List<LatLng> getAccidentProneAreaLocations() {
+        // 실제 데이터로 대체
+        List<LatLng> locations = new ArrayList<>();
+        locations.add(new LatLng(latitude - 0.003, longitude - 0.003));
+        locations.add(new LatLng(latitude - 0.004, longitude - 0.004));
+        return locations;
     }
 
     @Override

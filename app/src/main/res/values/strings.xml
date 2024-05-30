@@ -2,4 +2,6 @@
     <string name="app_name">GuardianGo</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="navigation_drawer_open">드로어 열림</string>
+    <string name="navigation_drawer_close">드로어 닫힘</string>
 </resources>

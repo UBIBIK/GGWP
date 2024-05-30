@@ -47,6 +47,8 @@ dependencies {
 
     implementation ("com.google.code.gson:gson:2.8.6")
 
+    implementation ("androidx.slidingpanelayout:slidingpanelayout:1.2.0")
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
