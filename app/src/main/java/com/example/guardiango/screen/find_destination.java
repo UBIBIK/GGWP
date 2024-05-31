@@ -17,7 +17,11 @@ import com.example.guardiango.Custom.SwitchAdapter;
 import com.example.guardiango.Custom.SwitchItem;
 import com.example.guardiango.R;
 import com.example.guardiango.entity.CCTV;
+import com.example.guardiango.entity.ConvenienceStore;
+import com.example.guardiango.entity.Crime;
 import com.example.guardiango.entity.Element;
+import com.example.guardiango.entity.EmergencyBell;
+import com.example.guardiango.entity.SchoolZone;
 import com.example.guardiango.server.RetrofitClient;
 import com.example.guardiango.server.UserRetrofitInterface;
 import com.google.android.gms.maps.GoogleMap;
@@ -41,6 +45,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,9 +73,15 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
     private final List<Marker> cctvMarkers = new ArrayList<>();
     private final List<Marker> schoolZoneMarkers = new ArrayList<>();
     private final List<Marker> crimeAreaMarkers = new ArrayList<>();
-    private final List<Marker> accidentProneAreaMarkers = new ArrayList<>();
+    private final List<Marker> emergencyBellMarkers = new ArrayList<>();
+
+    private final List<Marker> convenienceStoreMarkers = new ArrayList<>();
     private static final String API_KEY = "Qo2Dzd0MGI2AyknkLTB8U6jqfAz5UwUA3gaqwxjj";
     private List<CCTV> cctvList = new ArrayList<>();
+    private List<SchoolZone> schoolZoneList  = new ArrayList<>();
+    private List<Crime> crimeList  = new ArrayList<>();
+    private List<EmergencyBell> emergencyBellList  = new ArrayList<>();
+    private List<ConvenienceStore> convenienceStoreList   = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,67 +160,7 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
         new GeoJsonLoaderTask().execute();
     }
 
-    //GeoJSON 파일 읽기 및 파싱
-    private void loadGeoJson() {
-        try {
-            // assets 폴더에 있는 GeoJSON 파일을 읽기
-            InputStream is = getAssets().open("GGWP.geojson");
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-
-            // 파일 내용을 문자열로 변환
-            String json = new String(buffer, "UTF-8");
-
-            // JSON 파싱
-            JSONObject geoJson = new JSONObject(json);
-            JSONArray features = geoJson.getJSONArray("features");
-
-            // features 배열을 순회하며 도로를 표시
-            for (int i = 0; i < features.length(); i++) {
-                JSONObject feature = features.getJSONObject(i);
-                JSONObject properties = feature.getJSONObject("properties");
-                JSONObject geometry = feature.getJSONObject("geometry");
-
-                int accidentCount = properties.getInt("accident_count");
-                int fireFightingCount = properties.getInt("fire_fighting_count");
-
-                // geometry.type이 MultiLineString인지 확인
-                if (geometry.getString("type").equals("MultiLineString")) {
-                    JSONArray coordinates = geometry.getJSONArray("coordinates");
-
-                    // MultiLineString의 각 LineString 처리
-                    for (int j = 0; j < coordinates.length(); j++) {
-                        JSONArray lineString = coordinates.getJSONArray(j);
-
-                        PolylineOptions polylineOptions = new PolylineOptions();
-                        for (int k = 0; k < lineString.length(); k++) {
-                            JSONArray latLng = lineString.getJSONArray(k);
-                            double lng = latLng.getDouble(0);
-                            double lat = latLng.getDouble(1);
-                            polylineOptions.add(new LatLng(lat, lng));
-                        }
-
-                        // 색상 설정
-                        if (accidentCount > 0) {
-                            polylineOptions.color(Color.RED);
-                        } else if (fireFightingCount > 0) {
-                            polylineOptions.color(Color.GREEN);
-                        } else {
-                            polylineOptions.color(Color.GRAY);
-                        }
-
-                        // 지도에 Polyline 추가
-                        googleMap.addPolyline(polylineOptions);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
+    // GeoJSON 파일 읽기 및 파싱
     private class GeoJsonLoaderTask extends AsyncTask<Void, Void, List<PolylineOptions>> {
         @Override
         protected List<PolylineOptions> doInBackground(Void... voids) {
@@ -221,7 +172,7 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
                 is.read(buffer);
                 is.close();
 
-                String json = new String(buffer, "UTF-8");
+                String json = new String(buffer, StandardCharsets.UTF_8);
                 JSONObject geoJson = new JSONObject(json);
                 JSONArray features = geoJson.getJSONArray("features");
 
@@ -231,30 +182,29 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
                     JSONObject geometry = feature.getJSONObject("geometry");
 
                     int accidentCount = properties.getInt("accident_count");
-                    int fireFightingCount = properties.getInt("fire_fighting_count");
+                    int fireFightingCount = properties.getInt("fire_fight_count");
 
-                    if (geometry.getString("type").equals("MultiLineString")) {
+                    // geometry.type이 LineString인지 확인하고 accidentCount 또는 fireFightingCount가 0 이상인 경우 처리
+                    if (geometry.getString("type").equals("LineString") && (accidentCount > 0 || fireFightingCount > 0)) {
                         JSONArray coordinates = geometry.getJSONArray("coordinates");
 
+                        PolylineOptions polylineOptions = new PolylineOptions();
                         for (int j = 0; j < coordinates.length(); j++) {
-                            JSONArray lineString = coordinates.getJSONArray(j);
-
-                            PolylineOptions polylineOptions = new PolylineOptions();
-                            for (int k = 0; k < lineString.length(); k++) {
-                                JSONArray latLng = lineString.getJSONArray(k);
-                                double lng = latLng.getDouble(0);
-                                double lat = latLng.getDouble(1);
-                                polylineOptions.add(new LatLng(lat, lng));
-                            }
-
-                            if (accidentCount > 0) {
-                                polylineOptions.color(Color.RED);
-                            } else if (fireFightingCount > 0) {
-                                polylineOptions.color(Color.GREEN);
-                            }
-
-                            polylineOptionsList.add(polylineOptions);
+                            JSONArray latLng = coordinates.getJSONArray(j);
+                            double lng = latLng.getDouble(0);
+                            double lat = latLng.getDouble(1);
+                            polylineOptions.add(new LatLng(lat, lng));
                         }
+
+                        // 색상 설정 (투명도 포함)
+                        int alpha = 150; // 0-255 사이의 값으로 투명도 설정 (150은 약간 투명한 상태)
+                        if (accidentCount > 0) {
+                            polylineOptions.color(Color.argb(alpha, 255, 0, 0)); // 빨간색
+                        } else if (fireFightingCount > 0) {
+                            polylineOptions.color(Color.argb(alpha, 0, 255, 0)); // 초록색
+                        }
+
+                        polylineOptionsList.add(polylineOptions);
                     }
                 }
             } catch (Exception e) {
@@ -271,6 +221,8 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
         }
     }
 
+
+
     private void fetchElementData() {
         UserRetrofitInterface apiService = RetrofitClient.getUserRetrofitInterface();
         Call<Element> call = apiService.getElementData();
@@ -278,7 +230,12 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
             @Override
             public void onResponse(Call<Element> call, Response<Element> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    cctvList = response.body().getCctvs();
+                    Element element = response.body();
+                    cctvList = element.getCctvs();
+                    schoolZoneList = element.getSchoolZones();
+                    crimeList = element.getCrimes();
+                    emergencyBellList = element.getEmergencyBells();
+                    convenienceStoreList = element.getConvenienceStores();
                     Toast.makeText(find_destination.this, "데이터 가져오기 성공", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(find_destination.this, "데이터 가져오기 실패", Toast.LENGTH_SHORT).show();
@@ -293,12 +250,14 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
     }
 
 
+
     private List<SwitchItem> getSwitchItems() {
         List<SwitchItem> switchItems = new ArrayList<>();
         switchItems.add(new SwitchItem("CCTV", false));
         switchItems.add(new SwitchItem("어린이 보호구역", false));
         switchItems.add(new SwitchItem("범죄자 거주지", false));
-        switchItems.add(new SwitchItem("사고다발지역", false));
+        switchItems.add(new SwitchItem("비상벨", false));
+        switchItems.add(new SwitchItem("편의점", false));
         return switchItems;
     }
 
@@ -315,7 +274,10 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
                 toggleCrimeAreaMarkers(isChecked);
                 break;
             case 3:
-                toggleAccidentProneAreaMarkers(isChecked);
+                toggleEmergencyBellMarkers(isChecked);
+                break;
+            case 4:
+                //TODO:toggleConvenienceStoreMarkers(isChecked);
                 break;
         }
     }
@@ -443,9 +405,9 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
 
     private void toggleSchoolZoneMarkers(boolean show) {
         if (show) {
-            for (LatLng location : getSchoolZoneLocations()) {
+            for (SchoolZone schoolZone : schoolZoneList) {
                 Marker marker = googleMap.addMarker(new MarkerOptions()
-                        .position(location)
+                        .position(new LatLng(schoolZone.getLatitude(), schoolZone.getLongitude()))
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
                         .title("어린이 보호구역"));
                 schoolZoneMarkers.add(marker);
@@ -460,9 +422,9 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
 
     private void toggleCrimeAreaMarkers(boolean show) {
         if (show) {
-            for (LatLng location : getCrimeAreaLocations()) {
+            for (Crime crime : crimeList) {
                 Marker marker = googleMap.addMarker(new MarkerOptions()
-                        .position(location)
+                        .position(new LatLng(crime.get위도(), crime.get경도()))
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
                         .title("범죄자 거주지"));
                 crimeAreaMarkers.add(marker);
@@ -475,46 +437,39 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
         }
     }
 
-    private void toggleAccidentProneAreaMarkers(boolean show) {
+    private void toggleEmergencyBellMarkers(boolean show) {
         if (show) {
-            for (LatLng location : getAccidentProneAreaLocations()) {
+            for (EmergencyBell emergencyBell : emergencyBellList) {
                 Marker marker = googleMap.addMarker(new MarkerOptions()
-                        .position(location)
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
-                        .title("사고다발지역"));
-                accidentProneAreaMarkers.add(marker);
+                        .position(new LatLng(emergencyBell.getLatitude(), emergencyBell.getLongitude()))
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                        .title("비상벨"));
+                emergencyBellMarkers.add(marker);
             }
         } else {
-            for (Marker marker : accidentProneAreaMarkers) {
+            for (Marker marker : emergencyBellMarkers) {
                 marker.remove();
             }
-            accidentProneAreaMarkers.clear();
+            emergencyBellMarkers.clear();
         }
     }
 
-    private List<LatLng> getSchoolZoneLocations() {
-        // 실제 데이터로 대체
-        List<LatLng> locations = new ArrayList<>();
-        locations.add(new LatLng(latitude - 0.001, longitude - 0.001));
-        locations.add(new LatLng(latitude - 0.002, longitude - 0.002));
-        return locations;
-    }
-
-    private List<LatLng> getCrimeAreaLocations() {
-        // 실제 데이터로 대체
-        List<LatLng> locations = new ArrayList<>();
-        locations.add(new LatLng(latitude + 0.003, longitude + 0.003));
-        locations.add(new LatLng(latitude + 0.004, longitude + 0.004));
-        return locations;
-    }
-
-    private List<LatLng> getAccidentProneAreaLocations() {
-        // 실제 데이터로 대체
-        List<LatLng> locations = new ArrayList<>();
-        locations.add(new LatLng(latitude - 0.003, longitude - 0.003));
-        locations.add(new LatLng(latitude - 0.004, longitude - 0.004));
-        return locations;
-    }
+    /*private void toggleConvenienceStoreMarkers(boolean show) {
+        if (show) {
+            for (ConvenienceStore convenienceStore : convenienceStoreList) {
+                Marker marker = googleMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(convenienceStore.g(), convenienceStore.getLongitude()))
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                        .title("편의점"));
+                convenienceStoreMarkers.add(marker);
+            }
+        } else {
+            for (Marker marker : convenienceStoreMarkers) {
+                marker.remove();
+            }
+            convenienceStoreMarkers.clear();
+        }
+    }*/
 
     @Override
     protected void onResume() {
