@@ -27,6 +27,16 @@ public class home extends AppCompatActivity {
             return insets;
         });
 
+        ImageButton new_home = (ImageButton) findViewById(R.id.Home);
+        new_home.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), your_new_home.class);
+                startActivity(intent);
+            }
+        });
+
+
         ImageButton SOS = (ImageButton) findViewById(R.id.SOS);
         SOS.setOnClickListener(new View.OnClickListener() {
             @Override
