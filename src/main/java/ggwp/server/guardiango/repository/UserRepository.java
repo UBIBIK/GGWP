@@ -1,11 +1,11 @@
-package ggwp.server.guardiango.service;
+package ggwp.server.guardiango.repository;
 
 import ggwp.server.guardiango.entity.User;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public interface UserService {
+public interface UserRepository {
     String insertUser(User user) throws Exception; // 사용자 추가
 
     User getUserDetail(String email) throws Exception; // 사용자 정보 조회

@@ -1,10 +1,10 @@
-package ggwp.server.guardiango.service.impl;
+package ggwp.server.guardiango.repository.impl;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import ggwp.server.guardiango.entity.User;
-import ggwp.server.guardiango.service.UserService;
+import ggwp.server.guardiango.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @Service
-public class UserServiceImpl implements UserService {
+public class UserRepositoryImpl implements UserRepository {
     public static final String COLLECTION_NAME = "users";
     Firestore firestore = FirestoreClient.getFirestore();
 

@@ -1,7 +1,7 @@
 package ggwp.server.guardiango.ServiceTest;
 
 import ggwp.server.guardiango.entity.CCTV;
-import ggwp.server.guardiango.service.CCTVService;
+import ggwp.server.guardiango.repository.CCTVRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,9 +9,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
 
 @SpringBootTest
-public class CCTVServiceTest {
+public class CCTVRepositoryTest {
     @Autowired
-    private CCTVService CCTVservice;
+    private CCTVRepository CCTVservice;
 
     @Test
     void getCCTVs() throws Exception {

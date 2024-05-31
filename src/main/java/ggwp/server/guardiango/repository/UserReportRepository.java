@@ -1,4 +1,4 @@
-package ggwp.server.guardiango.service;
+package ggwp.server.guardiango.repository;
 
 import ggwp.server.guardiango.entity.LocationData;
 import ggwp.server.guardiango.entity.Report;
@@ -8,7 +8,7 @@ import ggwp.server.guardiango.entity.UserReport;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public interface UserReportService {
+public interface UserReportRepository {
     String insertUserReport(UserInfo user) throws ExecutionException, InterruptedException; // 사용자 신고 목록 추가
 
     UserReport addReport(Report report, UserInfo user) throws Exception; // 사용자 신고 정보 추가

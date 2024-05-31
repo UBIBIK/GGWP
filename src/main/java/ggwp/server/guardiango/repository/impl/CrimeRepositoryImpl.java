@@ -1,4 +1,4 @@
-package ggwp.server.guardiango.service.impl;
+package ggwp.server.guardiango.repository.impl;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.Firestore;
@@ -6,14 +6,14 @@ import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import ggwp.server.guardiango.entity.Crime;
-import ggwp.server.guardiango.service.CrimeService;
+import ggwp.server.guardiango.repository.CrimeRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class CrimeServiceImpl implements CrimeService {
+public class CrimeRepositoryImpl implements CrimeRepository {
     public static final String COLLECTION_NAME = "crime";
     Firestore firestore = FirestoreClient.getFirestore();
 

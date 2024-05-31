@@ -1,17 +1,17 @@
-package ggwp.server.guardiango.service.impl;
+package ggwp.server.guardiango.repository.impl;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import ggwp.server.guardiango.entity.*;
-import ggwp.server.guardiango.service.UserReportService;
+import ggwp.server.guardiango.repository.UserReportRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Service
-public class UserReportServiceImpl implements UserReportService {
+public class UserReportRepositoryImpl implements UserReportRepository {
     public static final String COLLECTION_NAME = "userReports";
     Firestore firestore = FirestoreClient.getFirestore();
 
@@ -177,6 +177,7 @@ public class UserReportServiceImpl implements UserReportService {
         }
         return reports;
     }
+
     @Override
     public Report getReportByLocation(LocationData reportLocation, UserInfo user) throws Exception {
         // 신고 목록이 존재하는지 확인

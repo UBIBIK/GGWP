@@ -1,4 +1,4 @@
-package ggwp.server.guardiango.service.impl;
+package ggwp.server.guardiango.repository.impl;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
@@ -6,8 +6,8 @@ import com.google.firebase.cloud.FirestoreClient;
 import ggwp.server.guardiango.entity.Group;
 import ggwp.server.guardiango.entity.User;
 import ggwp.server.guardiango.entity.UserInfo;
-import ggwp.server.guardiango.service.GroupService;
-import ggwp.server.guardiango.service.UserService;
+import ggwp.server.guardiango.repository.GroupRepository;
+import ggwp.server.guardiango.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,14 +15,14 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Service
-public class GroupServiceImpl implements GroupService {
+public class GroupRepositoryImpl implements GroupRepository {
     public static final String COLLECTION_NAME = "groups";
     Firestore firestore = FirestoreClient.getFirestore();
-    private final UserService userService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public GroupServiceImpl(UserService userService) {
-        this.userService = userService;
+    public GroupRepositoryImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     // 그룹 추가
@@ -131,7 +131,7 @@ public class GroupServiceImpl implements GroupService {
             if (member.get("groupMemberName").equals(deleteUserName)) {
                 it.remove();
 
-                userService.setGroupKeybyUserName(deleteUserName, null);
+                userRepository.setGroupKeybyUserName(deleteUserName, null);
                 updateGroup(group);
                 return group; // 수정한 그룹을 반환
             }
@@ -162,11 +162,11 @@ public class GroupServiceImpl implements GroupService {
             if (Objects.requireNonNull(document.getString("groupMaster")).equals(user.getUserEmail())) {
                 String groupKey = document.getString("groupKey");
 
-                List<User> userList = userService.getUsers();
+                List<User> userList = userRepository.getUsers();
                 for (User findUser : userList) {
                     if (findUser.getGroupKey() != null && findUser.getGroupKey().equals(groupKey)) {
                         findUser.setGroupKey(null);
-                        userService.updateUser(findUser);
+                        userRepository.updateUser(findUser);
                     }
                 }
 

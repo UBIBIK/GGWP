@@ -2,7 +2,7 @@ package ggwp.server.guardiango.ServiceTest;
 
 import ggwp.server.guardiango.entity.Group;
 import ggwp.server.guardiango.entity.UserInfo;
-import ggwp.server.guardiango.service.GroupService;
+import ggwp.server.guardiango.repository.GroupRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
 
 @SpringBootTest
-public class GroupServiceTest {
+public class GroupRepositoryTest {
     private static final String TEST_GROUP_NAME = "test1";
     private static final String TEST_GROUP_MASTER_EMAIL = "test1@example.com";
     private static final String TEST_GROUP_MASTER_NAME = "test1";
@@ -19,7 +19,7 @@ public class GroupServiceTest {
     private static final String TEST_GROUP_KEY = "8et62mcnqqp5qk66";
 
     @Autowired
-    private GroupService groupService;
+    private GroupRepository groupRepository;
     
     // 그룹 정보 추가 테스트
     @Test
@@ -28,7 +28,7 @@ public class GroupServiceTest {
         UserInfo master = new UserInfo();
         master.setUserEmail(TEST_GROUP_MASTER_EMAIL);
         master.setUserName(TEST_GROUP_MASTER_NAME);
-        groupService.insertGroup(group, master);
+        groupRepository.insertGroup(group, master);
     }
 
     // 그룹 멤버 추가 테스트
@@ -36,21 +36,21 @@ public class GroupServiceTest {
     public void addGroupMemberTest() throws Exception {
         UserInfo member = new UserInfo();
         member.setUserName(TEST_GROUP_MEMBER_NAME);
-        Group group = groupService.addGroupMember(TEST_GROUP_KEY, member);
+        Group group = groupRepository.addGroupMember(TEST_GROUP_KEY, member);
         System.out.println(group.getGroupKey());
     }
 
     // 그룹 멤버 삭제 테스트
     @Test
     public void deleteGroupMemberTest() throws Exception {
-        groupService.deleteGroupMember(TEST_GROUP_MEMBER_NAME);
+        groupRepository.deleteGroupMember(TEST_GROUP_MEMBER_NAME);
     }
 
     // 그룹 정보 수정 테스트
     @Test
     public void updateGroup() throws Exception {
         Group updateGroup = new Group(TEST_GROUP_NAME, "k4p8usof9v312lht");
-        groupService.updateGroup(updateGroup);
+        groupRepository.updateGroup(updateGroup);
     }
 
     // 그룹 정보 삭제 테스트
@@ -60,13 +60,13 @@ public class GroupServiceTest {
         master.setUserEmail(TEST_GROUP_MASTER_EMAIL);
         master.setUserName(TEST_GROUP_MASTER_NAME);
         master.setGroupKey(TEST_GROUP_KEY);
-        groupService.deleteGroup(master);
+        groupRepository.deleteGroup(master);
     }
 
     // 그룹 키로 그룹 정보 조회 테스트
     @Test
     public void getGroupByGroupCodeTest() throws Exception {
-        Group group = groupService.getGroupByGroupKey(TEST_GROUP_KEY);
+        Group group = groupRepository.getGroupByGroupKey(TEST_GROUP_KEY);
         System.out.println(group.getGroupName());
         System.out.println(group.getGroupKey());
     }
@@ -74,7 +74,7 @@ public class GroupServiceTest {
     // 그룹 코드로 그룹원 조회 테스트
     @Test
     void getGroupMemberNameByGroupKeyTest() throws Exception {
-        List<String> groupMemberNames = groupService.getGroupMemberNameByGroupKey(TEST_GROUP_KEY);
+        List<String> groupMemberNames = groupRepository.getGroupMemberNameByGroupKey(TEST_GROUP_KEY);
 
         for (String name : groupMemberNames) {
             System.out.println(name);
@@ -84,7 +84,7 @@ public class GroupServiceTest {
     // 그룹 코드로 그룹 이름 조회 테스트
     @Test
     void getGroupNameByGroupKeyTest() throws Exception {
-        String groupName = groupService.getGroupNameByGroupKey(TEST_GROUP_KEY);
+        String groupName = groupRepository.getGroupNameByGroupKey(TEST_GROUP_KEY);
         System.out.println(groupName);
     }
 
@@ -98,7 +98,7 @@ public class GroupServiceTest {
         member.getLocationInfo().put("latitude", 321.123123);
         member.getLocationInfo().put("longitude", 123.123123);
 
-        Group group = groupService.updateLocationInfo(member);
+        Group group = groupRepository.updateLocationInfo(member);
         System.out.println(group.getGroupKey());
     }
 }

@@ -1,4 +1,4 @@
-package ggwp.server.guardiango.service;
+package ggwp.server.guardiango.repository;
 
 import ggwp.server.guardiango.entity.Group;
 import ggwp.server.guardiango.entity.UserInfo;
@@ -6,7 +6,7 @@ import ggwp.server.guardiango.entity.UserInfo;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public interface GroupService {
+public interface GroupRepository {
     String insertGroup(Group group, UserInfo user) throws ExecutionException, InterruptedException;     // 그룹 추가
 
     Group addGroupMember(String groupKey, UserInfo user) throws Exception; // 그룹 멤버 추가

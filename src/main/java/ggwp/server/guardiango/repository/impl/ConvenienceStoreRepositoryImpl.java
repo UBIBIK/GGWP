@@ -1,4 +1,4 @@
-package ggwp.server.guardiango.service.impl;
+package ggwp.server.guardiango.repository.impl;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.Firestore;
@@ -6,14 +6,14 @@ import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import ggwp.server.guardiango.entity.ConvenienceStore;
-import ggwp.server.guardiango.service.ConvenienceStoreService;
+import ggwp.server.guardiango.repository.ConvenienceStoreRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ConvenienceStoreServiceImpl implements ConvenienceStoreService {
+public class ConvenienceStoreRepositoryImpl implements ConvenienceStoreRepository {
     public static final String COLLECTION_NAME = "convenienceStore";
     Firestore firestore = FirestoreClient.getFirestore();
 
@@ -25,7 +25,7 @@ public class ConvenienceStoreServiceImpl implements ConvenienceStoreService {
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
 
         if (documents.isEmpty()) {
-            throw new Exception("CCTV 데이터를 찾을 수 없습니다.");
+            throw new Exception("편의점 데이터를 찾을 수 없습니다.");
         } else {
             for (QueryDocumentSnapshot document : documents) {
                 ConvenienceStore convenienceStore = document.toObject(ConvenienceStore.class);

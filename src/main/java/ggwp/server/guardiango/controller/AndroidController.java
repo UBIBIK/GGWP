@@ -1,10 +1,10 @@
 package ggwp.server.guardiango.controller;
 
 import ggwp.server.guardiango.entity.*;
-import ggwp.server.guardiango.service.ElementSerivce;
-import ggwp.server.guardiango.service.GroupService;
-import ggwp.server.guardiango.service.UserReportService;
-import ggwp.server.guardiango.service.UserService;
+import ggwp.server.guardiango.repository.ElementRepository;
+import ggwp.server.guardiango.repository.GroupRepository;
+import ggwp.server.guardiango.repository.UserReportRepository;
+import ggwp.server.guardiango.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,17 +22,17 @@ import java.util.concurrent.ExecutionException;
 @RestController
 public class AndroidController {
 
-    private final UserService userService;
-    private final GroupService groupService;
-    private final ElementSerivce elementSerivce;
-    private final UserReportService userReportService;
+    private final UserRepository userRepository;
+    private final GroupRepository groupRepository;
+    private final ElementRepository elementRepository;
+    private final UserReportRepository userReportRepository;
 
     @Autowired
-    public AndroidController(UserService userService, GroupService groupService, ElementSerivce elementSerivce, UserReportService userReportService) {
-        this.userService = userService;
-        this.groupService = groupService;
-        this.elementSerivce = elementSerivce;
-        this.userReportService = userReportService;
+    public AndroidController(UserRepository userRepository, GroupRepository groupRepository, ElementRepository elementRepository, UserReportRepository userReportRepository) {
+        this.userRepository = userRepository;
+        this.groupRepository = groupRepository;
+        this.elementRepository = elementRepository;
+        this.userReportRepository = userReportRepository;
     }
 
     // 회원가입
@@ -43,14 +43,14 @@ public class AndroidController {
         log.info("Phone_number={}",user.getPhoneNumber());
         log.info("useremail={}",user.getUserEmail());
         log.info("userPassword={}",user.getPassword());
-        userService.insertUser(user);
+        userRepository.insertUser(user);
     }
 
     //로그인 확인
     @PostMapping("/login")
     @ResponseBody
     public ResponseEntity<UserInfo> loginUser(@RequestBody User loginUser) throws Exception {
-        List<User> userList = userService.getUsers();
+        List<User> userList = userRepository.getUsers();
 
         log.info("입력받은 이메일 = {}",loginUser.getUserEmail());
         log.info("입력받은 비밀번호 = {}",loginUser.getPassword());
@@ -73,7 +73,7 @@ public class AndroidController {
     @PostMapping("/group-create")
     @ResponseBody
     public ResponseEntity<Group> groupCreate(@RequestBody UserInfo userinfo) throws Exception {
-        List<User> userList = userService.getUsers();
+        List<User> userList = userRepository.getUsers();
         Group tempGroup = null;
 
         for (User user : userList) {
@@ -81,12 +81,12 @@ public class AndroidController {
                 tempGroup = new Group(userinfo.getUserName(), randomNumber());
                 tempGroup.setGroupMaster(user.getUserEmail());
                 userinfo.setGroupKey(tempGroup.getGroupKey());
-                groupService.insertGroup(tempGroup, userinfo);
+                groupRepository.insertGroup(tempGroup, userinfo);
                 user.setGroupKey(userinfo.getGroupKey());
-                userService.updateUser(user); // user 컬렉션에 해당 groupKey 정보 업데이트
-                groupService.updateLocationInfo(userinfo);
-                userReportService.insertUserReport(userinfo);
-                userReportService.insertUserReport(userinfo); // 사용자 신고 목록 생성
+                userRepository.updateUser(user); // user 컬렉션에 해당 groupKey 정보 업데이트
+                groupRepository.updateLocationInfo(userinfo);
+                userReportRepository.insertUserReport(userinfo);
+                userReportRepository.insertUserReport(userinfo); // 사용자 신고 목록 생성
                 return ResponseEntity.ok(tempGroup);
             }
         }
@@ -98,8 +98,8 @@ public class AndroidController {
     @PostMapping("/group-join")
     @ResponseBody
     public ResponseEntity<Group> groupJoin(@RequestBody UserInfo userinfo) throws Exception {
-        List<Group> list = groupService.getGroups();
-        List<User> userList = userService.getUsers();
+        List<Group> list = groupRepository.getGroups();
+        List<User> userList = userRepository.getUsers();
         Group updateGroup;
 
         log.info("그룹 참가 유저 이메일 = {}",userinfo.getUserEmail());
@@ -108,13 +108,13 @@ public class AndroidController {
         for(Group groupList : list) {
             log.info("데이터베이스 그룹키 = {}", groupList.getGroupKey());
             if(groupList.getGroupKey().equals(userinfo.getGroupKey())) {
-                updateGroup = groupService.addGroupMember(userinfo.getGroupKey(), userinfo);
+                updateGroup = groupRepository.addGroupMember(userinfo.getGroupKey(), userinfo);
 
                 for(User user : userList) {
                     if (user.getUserEmail().equals(userinfo.getUserEmail())) {
                         user.setGroupKey(updateGroup.getGroupKey());
-                        groupService.updateLocationInfo(userinfo);
-                        userService.updateUser(user); // user 컬렉션에 해당 groupKey 정보 업데이트
+                        groupRepository.updateLocationInfo(userinfo);
+                        userRepository.updateUser(user); // user 컬렉션에 해당 groupKey 정보 업데이트
                     }
                 }
 
@@ -129,7 +129,7 @@ public class AndroidController {
     @PostMapping("/group-exist")
     @ResponseBody
     public ResponseEntity<Group> getUserGroups(@RequestBody UserInfo user) throws ExecutionException, InterruptedException {
-        List<Group> list = groupService.getGroups();
+        List<Group> list = groupRepository.getGroups();
 
         for(Group groupList : list) {
             if(groupList.getGroupKey().equals(user.getGroupKey())) {
@@ -154,8 +154,8 @@ public class AndroidController {
     @PostMapping("/group-delete")
     @ResponseBody
     public void groupDelete(@RequestBody UserInfo user) throws Exception {
-        userReportService.deleteUserReport(user);
-        groupService.deleteGroup(user);
+        userReportRepository.deleteUserReport(user);
+        groupRepository.deleteGroup(user);
     }
 
     //그룹 멤버 삭제
@@ -164,7 +164,7 @@ public class AndroidController {
     public ResponseEntity<Group> groupUserDelete(@RequestBody String deleteUserName) throws Exception {
         deleteUserName = deleteUserName.replaceAll("\"", "");
         log.info("삭제 할 멤버 이름 : {}", deleteUserName);
-        Group updateGroup = groupService.deleteGroupMember(deleteUserName);
+        Group updateGroup = groupRepository.deleteGroupMember(deleteUserName);
 
         return ResponseEntity.ok(updateGroup);
     }
@@ -172,36 +172,36 @@ public class AndroidController {
     // 위치 정보를 저장하고 처리 결과를 반환하는 메서드
     @PostMapping("/save-location")
     public ResponseEntity<Group> updateLocation(@RequestBody UserInfo user) throws Exception {
-        return ResponseEntity.ok(groupService.updateLocationInfo(user));
+        return ResponseEntity.ok(groupRepository.updateLocationInfo(user));
     }
 
     // 요소 정보 조회
     @PostMapping("/get-Element")
     public ResponseEntity<Element> getElement() throws Exception {
-        return ResponseEntity.ok(elementSerivce.getElement());
+        return ResponseEntity.ok(elementRepository.getElement());
     }
 
     // 사용자 신고 저장
     @PostMapping("/add-userReport")
     public ResponseEntity<UserReport> addUserReport(@RequestBody Report report, UserInfo user) throws Exception {
-        return ResponseEntity.ok(userReportService.addReport(report, user));
+        return ResponseEntity.ok(userReportRepository.addReport(report, user));
     }
 
     // 사용자 신고 삭제
     @PostMapping("/report-delete")
     public ResponseEntity<UserReport> reportDelete(@RequestBody Report report, UserInfo user) throws Exception {
-        return ResponseEntity.ok(userReportService.deleteReport(report, user));
+        return ResponseEntity.ok(userReportRepository.deleteReport(report, user));
     }
 
     // 사용자 신고 정보 조회
     @PostMapping("/get-report")
     public ResponseEntity<Report> getReport(@RequestBody LocationData deleteLocalDate, UserInfo user) throws Exception {
-        return ResponseEntity.ok(userReportService.getReportByLocation(deleteLocalDate, user));
+        return ResponseEntity.ok(userReportRepository.getReportByLocation(deleteLocalDate, user));
     }
 
     // 신고 정보 조회
     @PostMapping("/get-group-reports")
     public ResponseEntity<List<Report>> getGroupReports(@RequestBody UserInfo user) throws Exception {
-        return ResponseEntity.ok(userReportService.getReportsLocationByGroupKey(user.getGroupKey()));
+        return ResponseEntity.ok(userReportRepository.getReportsLocationByGroupKey(user.getGroupKey()));
     }
 }
