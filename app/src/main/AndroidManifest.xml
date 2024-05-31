@@ -36,7 +36,9 @@
 
         <activity android:name=".screen.find_destination"></activity>
 
-        <activity android:name=".screen.pathfind"></activity>
+        <activity android:name=".screen.home"></activity>
+
+        <activity android:name=".screen.SirenRecord"></activity>
 
         <!--구글맵 부분-->
         <meta-data
@@ -52,5 +54,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
 </manifest>

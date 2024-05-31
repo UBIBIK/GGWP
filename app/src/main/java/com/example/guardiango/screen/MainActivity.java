@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
                             loadUserGroups();
 
-                            Intent intent = new Intent(MainActivity.this, your_new_home.class);
+                            Intent intent = new Intent(MainActivity.this, home.class);
                             startActivity(intent);
                             finish();
                         } else {

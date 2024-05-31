@@ -48,6 +48,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.io.InputStream;
+
 public class find_destination extends AppCompatActivity implements OnMapReadyCallback, SwitchAdapter.OnSwitchCheckedChangeListener {
 
     private MapView mapView;
@@ -113,6 +117,160 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
         fetchElementData(); // 화면이 실행될 때 데이터 가져오기
     }
 
+    @Override
+    public void onMapReady(GoogleMap map) {
+        googleMap = map;
+        LatLng location = new LatLng(latitude, longitude);
+        googleMap.addMarker(new MarkerOptions()
+                .position(location)
+                .title("출발지")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+
+        googleMap.setOnMapClickListener(latLng -> {
+            if (isDestinationSetMode) {
+                if (destinationMarker != null) {
+                    destinationMarker.remove();
+                }
+                destinationMarker = googleMap.addMarker(new MarkerOptions()
+                        .position(latLng)
+                        .title("목적지")
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                statusBar.setText("경로를 검색중입니다...");
+                isDestinationSetMode = false;
+                fetchRoute(location, latLng, waypoints);
+            } else if (isEditMode) {
+                waypoints.add(latLng);
+                fetchRoute(new LatLng(latitude, longitude), destinationMarker.getPosition(), waypoints);
+            }
+        });
+
+        // GeoJSON 파일을 비동기적으로 로드하여 지도에 표시
+        new GeoJsonLoaderTask().execute();
+    }
+
+    //GeoJSON 파일 읽기 및 파싱
+    private void loadGeoJson() {
+        try {
+            // assets 폴더에 있는 GeoJSON 파일을 읽기
+            InputStream is = getAssets().open("GGWP.geojson");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+
+            // 파일 내용을 문자열로 변환
+            String json = new String(buffer, "UTF-8");
+
+            // JSON 파싱
+            JSONObject geoJson = new JSONObject(json);
+            JSONArray features = geoJson.getJSONArray("features");
+
+            // features 배열을 순회하며 도로를 표시
+            for (int i = 0; i < features.length(); i++) {
+                JSONObject feature = features.getJSONObject(i);
+                JSONObject properties = feature.getJSONObject("properties");
+                JSONObject geometry = feature.getJSONObject("geometry");
+
+                int accidentCount = properties.getInt("accident_count");
+                int fireFightingCount = properties.getInt("fire_fighting_count");
+
+                // geometry.type이 MultiLineString인지 확인
+                if (geometry.getString("type").equals("MultiLineString")) {
+                    JSONArray coordinates = geometry.getJSONArray("coordinates");
+
+                    // MultiLineString의 각 LineString 처리
+                    for (int j = 0; j < coordinates.length(); j++) {
+                        JSONArray lineString = coordinates.getJSONArray(j);
+
+                        PolylineOptions polylineOptions = new PolylineOptions();
+                        for (int k = 0; k < lineString.length(); k++) {
+                            JSONArray latLng = lineString.getJSONArray(k);
+                            double lng = latLng.getDouble(0);
+                            double lat = latLng.getDouble(1);
+                            polylineOptions.add(new LatLng(lat, lng));
+                        }
+
+                        // 색상 설정
+                        if (accidentCount > 0) {
+                            polylineOptions.color(Color.RED);
+                        } else if (fireFightingCount > 0) {
+                            polylineOptions.color(Color.GREEN);
+                        } else {
+                            polylineOptions.color(Color.GRAY);
+                        }
+
+                        // 지도에 Polyline 추가
+                        googleMap.addPolyline(polylineOptions);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private class GeoJsonLoaderTask extends AsyncTask<Void, Void, List<PolylineOptions>> {
+        @Override
+        protected List<PolylineOptions> doInBackground(Void... voids) {
+            List<PolylineOptions> polylineOptionsList = new ArrayList<>();
+            try {
+                InputStream is = getAssets().open("GGWP.geojson");
+                int size = is.available();
+                byte[] buffer = new byte[size];
+                is.read(buffer);
+                is.close();
+
+                String json = new String(buffer, "UTF-8");
+                JSONObject geoJson = new JSONObject(json);
+                JSONArray features = geoJson.getJSONArray("features");
+
+                for (int i = 0; i < features.length(); i++) {
+                    JSONObject feature = features.getJSONObject(i);
+                    JSONObject properties = feature.getJSONObject("properties");
+                    JSONObject geometry = feature.getJSONObject("geometry");
+
+                    int accidentCount = properties.getInt("accident_count");
+                    int fireFightingCount = properties.getInt("fire_fighting_count");
+
+                    if (geometry.getString("type").equals("MultiLineString")) {
+                        JSONArray coordinates = geometry.getJSONArray("coordinates");
+
+                        for (int j = 0; j < coordinates.length(); j++) {
+                            JSONArray lineString = coordinates.getJSONArray(j);
+
+                            PolylineOptions polylineOptions = new PolylineOptions();
+                            for (int k = 0; k < lineString.length(); k++) {
+                                JSONArray latLng = lineString.getJSONArray(k);
+                                double lng = latLng.getDouble(0);
+                                double lat = latLng.getDouble(1);
+                                polylineOptions.add(new LatLng(lat, lng));
+                            }
+
+                            if (accidentCount > 0) {
+                                polylineOptions.color(Color.RED);
+                            } else if (fireFightingCount > 0) {
+                                polylineOptions.color(Color.GREEN);
+                            }
+
+                            polylineOptionsList.add(polylineOptions);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return polylineOptionsList;
+        }
+
+        @Override
+        protected void onPostExecute(List<PolylineOptions> polylineOptionsList) {
+            for (PolylineOptions polylineOptions : polylineOptionsList) {
+                googleMap.addPolyline(polylineOptions);
+            }
+        }
+    }
+
     private void fetchElementData() {
         UserRetrofitInterface apiService = RetrofitClient.getUserRetrofitInterface();
         Call<Element> call = apiService.getElementData();
@@ -165,35 +323,6 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-    }
-
-    @Override
-    public void onMapReady(GoogleMap map) {
-        googleMap = map;
-        LatLng location = new LatLng(latitude, longitude);
-        googleMap.addMarker(new MarkerOptions()
-                .position(location)
-                .title("출발지")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
-
-        googleMap.setOnMapClickListener(latLng -> {
-            if (isDestinationSetMode) {
-                if (destinationMarker != null) {
-                    destinationMarker.remove();
-                }
-                destinationMarker = googleMap.addMarker(new MarkerOptions()
-                        .position(latLng)
-                        .title("목적지")
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                statusBar.setText("경로를 검색중입니다...");
-                isDestinationSetMode = false;
-                fetchRoute(location, latLng, waypoints);
-            } else if (isEditMode) {
-                waypoints.add(latLng);
-                fetchRoute(new LatLng(latitude, longitude), destinationMarker.getPosition(), waypoints);
-            }
-        });
     }
 
     @SuppressLint("StaticFieldLeak")
