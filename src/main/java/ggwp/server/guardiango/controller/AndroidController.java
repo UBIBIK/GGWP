@@ -176,7 +176,7 @@ public class AndroidController {
     }
 
     // 요소 정보 조회
-    @PostMapping("/get-Element")
+    @PostMapping("/get-element")
     public ResponseEntity<Element> getElement() throws Exception {
         return ResponseEntity.ok(elementRepository.getElement());
     }
@@ -199,7 +199,7 @@ public class AndroidController {
         return ResponseEntity.ok(userReportRepository.getReportByLocation(deleteLocalDate, user));
     }
 
-    // 신고 정보 조회
+    // 그룹 키로 신고 정보 조회
     @PostMapping("/get-group-reports")
     public ResponseEntity<List<Report>> getGroupReports(@RequestBody UserInfo user) throws Exception {
         return ResponseEntity.ok(userReportRepository.getReportsLocationByGroupKey(user.getGroupKey()));
