@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         Button test = (Button) findViewById(R.id.test_button);
         test.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                Intent intent_find = new Intent(getApplicationContext(), your_new_home.class);
+                Intent intent_find = new Intent(getApplicationContext(), home.class);
                 startActivity(intent_find);
             }
         });

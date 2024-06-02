@@ -117,17 +117,6 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
 
-        //홈에서 그룹으로 가는 버튼 구현
-        Button home_group_button = findViewById(R.id.home_group_button);
-
-        home_group_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), home_group.class);
-                startActivity(intent);
-            }
-        });
-
     }
 
     @Override

@@ -45,6 +45,7 @@ public class SirenRecord extends AppCompatActivity {
 
         Button buttonPlayStop = findViewById(R.id.Siren);
         Button buttonRecord = findViewById(R.id.Record);
+        Button back = findViewById(R.id.siren_record_back);
 
         // MediaPlayer 초기화
         mediaPlayer = MediaPlayer.create(this, R.raw.siren);
@@ -81,6 +82,13 @@ public class SirenRecord extends AppCompatActivity {
         if (!checkPermission()) {
             requestPermission();
         }
+
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
 
     private void startRecording() {
@@ -177,6 +185,5 @@ public class SirenRecord extends AppCompatActivity {
             mediaRecorder = null;
         }
     }
-
 
 }

@@ -9,6 +9,7 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -74,6 +75,14 @@ public class home_group extends AppCompatActivity {
 
         //리스트 클릭
         groupListView.setOnItemClickListener((parent, view, position, id) -> showGroupDetailDialog(sharedPreferencesGroup.getGroupInfo()));
+
+        Button back = findViewById(R.id.home_group_back);
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
     }
 

@@ -45,5 +45,14 @@ public class home extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        ImageButton Group = (ImageButton) findViewById(R.id.Group);
+        Group.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), home_group.class);
+                startActivity(intent);
+            }
+        });
     }
 }

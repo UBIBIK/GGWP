@@ -16,7 +16,7 @@
             android:id="@+id/Siren"
             android:layout_width="140dp"
             android:layout_height="140dp"
-            android:background="@drawable/green_button"
+            android:background="@drawable/rounded_green_button"
             android:text="사이렌 버튼">
 
         </Button>
@@ -35,11 +35,21 @@
             android:id="@+id/Record"
             android:layout_width="140dp"
             android:layout_height="140dp"
-            android:background="@drawable/green_button"
+            android:background="@drawable/rounded_green_button"
             android:text="녹음">
 
         </Button>
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/siren_record_back"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/rounded_green_button"
+        android:text="뒤로가기"
+        android:textColor="#000000">
+
+    </Button>
 
 </LinearLayout>
