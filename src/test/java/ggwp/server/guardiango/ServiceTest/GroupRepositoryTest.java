@@ -65,7 +65,7 @@ public class GroupRepositoryTest {
 
     // 그룹 키로 그룹 정보 조회 테스트
     @Test
-    public void getGroupByGroupCodeTest() throws Exception {
+    public void getGroupByGroupKeyTest() throws Exception {
         Group group = groupRepository.getGroupByGroupKey(TEST_GROUP_KEY);
         System.out.println(group.getGroupName());
         System.out.println(group.getGroupKey());

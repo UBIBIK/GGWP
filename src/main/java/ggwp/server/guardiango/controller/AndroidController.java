@@ -158,7 +158,7 @@ public class AndroidController {
         groupRepository.deleteGroup(user);
     }
 
-    //그룹 멤버 삭제
+    // 그룹 멤버 삭제
     @PostMapping("/group-member-delete")
     @ResponseBody
     public ResponseEntity<Group> groupUserDelete(@RequestBody String deleteUserName) throws Exception {
@@ -193,15 +193,15 @@ public class AndroidController {
         return ResponseEntity.ok(userReportRepository.deleteReport(report, user));
     }
 
-    // 사용자 신고 정보 조회
+    // 단일 신고 정보 조회
     @PostMapping("/get-report")
-    public ResponseEntity<Report> getReport(@RequestBody LocationData deleteLocalDate, UserInfo user) throws Exception {
-        return ResponseEntity.ok(userReportRepository.getReportByLocation(deleteLocalDate, user));
+    public ResponseEntity<Report> getReport(@RequestBody LocationData reportLocation, UserInfo user) throws Exception {
+        return ResponseEntity.ok(userReportRepository.getReportByLocation(reportLocation, user));
     }
 
-    // 그룹 키로 신고 정보 조회
-    @PostMapping("/get-group-reports")
-    public ResponseEntity<List<Report>> getGroupReports(@RequestBody UserInfo user) throws Exception {
-        return ResponseEntity.ok(userReportRepository.getReportsLocationByGroupKey(user.getGroupKey()));
+    // 그룹 신고 정보 조회
+    @PostMapping("/get-userReport")
+    public ResponseEntity<UserReport> getGroupReports(@RequestBody UserInfo user) throws Exception {
+        return ResponseEntity.ok(userReportRepository.getUserReportByGroupKey(user));
     }
 }

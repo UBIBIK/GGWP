@@ -132,50 +132,28 @@ public class UserReportRepositoryImpl implements UserReportRepository {
         ApiFuture<QuerySnapshot> querySnapshot = groupQuery.get();
 
         // 그룹이 존재하지 않으면 예외처리
-        if (querySnapshot.get().getDocuments().isEmpty()) {
-            throw new Exception("해당 그룹이 존재하지 않습니다.");
-        }
+        if (!querySnapshot.get().getDocuments().isEmpty()) {
+            for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+                String groupKey = document.getString("groupKey");
 
-        for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
-            String groupKey = document.getString("groupKey");
-
-            // 해당 그룹의 신고 목록 삭제
-            if(Objects.equals(groupKey, user.getGroupKey())) {
-                document.getReference().delete();
-                return true;
+                // 해당 그룹의 신고 목록 삭제
+                if(Objects.equals(groupKey, user.getGroupKey())) {
+                    document.getReference().delete();
+                    return true;
+                }
             }
         }
-        return false;
+        throw new Exception("해당 그룹이 존재하지 않습니다.");
     }
 
     @Override
-    public List<Report> getReportsLocationByGroupKey(String groupKey) throws Exception {
-        List<Report> reports = new ArrayList<>();
-
-        // Firestore에서 그룹 이름으로 문서를 조회
-        ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", groupKey).get();
+    public UserReport getUserReportByGroupKey(UserInfo user) throws Exception {
+        ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", user.getGroupKey()).get();
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-
-        if (documents.isEmpty()) {
-            throw new Exception("해당 그룹은 존재하지 않습니다.");
+        if(!documents.isEmpty()){
+            return documents.getFirst().toObject(UserReport.class);
         }
-
-        // 문서가 존재하면 해당 객체를 리스트 형태로 반환
-        QueryDocumentSnapshot document = documents.getFirst();
-        List<Map<String, Object>> reportDateList = (List<Map<String, Object>>) document.get("report");
-        if (reportDateList != null) {
-            for (Map<String, Object> reportData : reportDateList) {
-                Report report = new Report();
-                report.setLatitude((Double) reportData.get("latitude"));
-                report.setLongitude((Double) reportData.get("longitude"));
-                reports.add(report);
-            }
-        }
-
-        if (reports.isEmpty()) {
-            throw new Exception("해당 그룹의 신고 목록이 존재하지 않습니다.");
-        }
-        return reports;
+        throw new Exception("해당 그룹은 존재하지 않습니다.");
     }
 
     @Override
@@ -200,7 +178,8 @@ public class UserReportRepositoryImpl implements UserReportRepository {
             ArrayList<Report> reports = document.toObject(UserReport.class).getReport();
             for (Report report : reports) {
                 // 위도와 경도가 일치하는 객체 반환
-                if (report.getLatitude() == reportLocation.getLatitude() && report.getLongitude() == reportLocation.getLongitude()) {
+                if (report.getLatitude() == reportLocation.getLatitude()
+                        && report.getLongitude() == reportLocation.getLongitude()) {
                     return report;
                 }
             }

@@ -3,12 +3,12 @@ package ggwp.server.guardiango.ServiceTest;
 import ggwp.server.guardiango.entity.LocationData;
 import ggwp.server.guardiango.entity.Report;
 import ggwp.server.guardiango.entity.UserInfo;
+import ggwp.server.guardiango.entity.UserReport;
 import ggwp.server.guardiango.repository.UserReportRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @SpringBootTest
@@ -54,10 +54,15 @@ public class UserReportRepositoryTest {
     }
 
     @Test
-    public void getReportsLocationByGroupKeyTest() throws Exception {
-        List<Report> reports =  userReportRepository.getReportsLocationByGroupKey(TEST_GROUP_KEY);
-        for(Report report : reports) {
-            System.out.println("신고 위도 : " + report.getLatitude() + ", 경도 : " + report.getLongitude());
+    public void getUserReportByGroupKeyTest() throws Exception {
+        UserInfo testUserInfo = new UserInfo();
+        testUserInfo.setUserName(TEST_GROUP_MEMBER_NAME);
+        testUserInfo.setGroupKey(TEST_GROUP_KEY);
+        UserReport userReports =  userReportRepository.getUserReportByGroupKey(testUserInfo);
+        for (Report report : userReports.getReport()) {
+            double lat = report.getLatitude();
+            double lon = report.getLongitude();
+            System.out.println(lat + "," + lon);
         }
     }
 
@@ -66,9 +71,7 @@ public class UserReportRepositoryTest {
         UserInfo testUserInfo = new UserInfo();
         testUserInfo.setUserName(TEST_GROUP_MEMBER_NAME);
         testUserInfo.setGroupKey(TEST_GROUP_KEY);
-        LocationData findLocationData = new LocationData();
-        findLocationData.setLatitude(34.232);
-        findLocationData.setLongitude(136.3123);
+        LocationData findLocationData = new LocationData(34.7894339, 126.366573);
         Report report = userReportRepository.getReportByLocation(findLocationData, testUserInfo);
         System.out.println("신고자 이름 : " + report.getReporterName()
                 + ", 신고 이미지 : " + report.getImage() + ", 위도 : " + report.getLatitude()

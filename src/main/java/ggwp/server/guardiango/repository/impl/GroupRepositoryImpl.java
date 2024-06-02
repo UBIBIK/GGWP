@@ -195,14 +195,12 @@ public class GroupRepositoryImpl implements GroupRepository {
     // 그룹 키로 그룹 정보 조회
     @Override
     public Group getGroupByGroupKey(String groupKey) throws Exception {
-        DocumentReference documentReference =
-                firestore.collection(COLLECTION_NAME).document(groupKey);
-        ApiFuture<DocumentSnapshot> apiFuture = documentReference.get();
-        DocumentSnapshot documentSnapshot = apiFuture.get();
-        if(documentSnapshot.exists()){
-            return documentSnapshot.toObject(Group.class);
+        ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", groupKey).get();
+        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+        if(documents.isEmpty()){
+            throw new Exception("해당 그룹은 존재하지 않습니다.");
         } else {
-            throw new Exception("해당 유저는 존재하지 않습니다.");
+            return documents.getFirst().toObject(Group.class);
         }
     }
 
