@@ -166,7 +166,7 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
         protected List<PolylineOptions> doInBackground(Void... voids) {
             List<PolylineOptions> polylineOptionsList = new ArrayList<>();
             try {
-                InputStream is = getAssets().open("GGWP.geojson");
+                InputStream is = getAssets().open("Guardian_Go.geojson");
                 int size = is.available();
                 byte[] buffer = new byte[size];
                 is.read(buffer);
@@ -181,11 +181,9 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
                     JSONObject properties = feature.getJSONObject("properties");
                     JSONObject geometry = feature.getJSONObject("geometry");
 
-                    int accidentCount = properties.getInt("accident_count");
-                    int fireFightingCount = properties.getInt("fire_fight_count");
+                    double safetyScore = properties.getDouble("safety_score");
 
-                    // geometry.type이 LineString인지 확인하고 accidentCount 또는 fireFightingCount가 0 이상인 경우 처리
-                    if (geometry.getString("type").equals("LineString") && (accidentCount > 0 || fireFightingCount > 0)) {
+                    if (geometry.getString("type").equals("LineString")) {
                         JSONArray coordinates = geometry.getJSONArray("coordinates");
 
                         PolylineOptions polylineOptions = new PolylineOptions();
@@ -196,13 +194,9 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
                             polylineOptions.add(new LatLng(lat, lng));
                         }
 
-                        // 색상 설정 (투명도 포함)
-                        int alpha = 150; // 0-255 사이의 값으로 투명도 설정 (150은 약간 투명한 상태)
-                        if (accidentCount > 0) {
-                            polylineOptions.color(Color.argb(alpha, 255, 0, 0)); // 빨간색
-                        } else if (fireFightingCount > 0) {
-                            polylineOptions.color(Color.argb(alpha, 0, 255, 0)); // 초록색
-                        }
+                        // 색상 설정
+                        int color = getColorForSafetyScore(safetyScore);
+                        polylineOptions.color(color);
 
                         polylineOptionsList.add(polylineOptions);
                     }
@@ -219,7 +213,26 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
                 googleMap.addPolyline(polylineOptions);
             }
         }
+
+        private int getColorForSafetyScore(double safetyScore) {
+            int alpha = 255; // 투명도 설정
+            int red, green, blue = 0;
+
+            if (safetyScore <= 50) {
+                // 빨강색 (RGB: 255, 0, 0)에서 노란색 (RGB: 255, 255, 0)으로의 그라데이션
+                red = 255;
+                green = (int) (255 * (safetyScore / 50.0));
+            } else {
+                // 노란색 (RGB: 255, 255, 0)에서 초록색 (RGB: 0, 255, 0)으로의 그라데이션
+                red = (int) (255 * (1 - ((safetyScore - 50) / 50.0)));
+                green = 255;
+            }
+
+            return Color.argb(alpha, red, green, blue);
+        }
+
     }
+
 
 
 
@@ -277,7 +290,7 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
                 toggleEmergencyBellMarkers(isChecked);
                 break;
             case 4:
-                //TODO:toggleConvenienceStoreMarkers(isChecked);
+                toggleConvenienceStoreMarkers(isChecked);
                 break;
         }
     }
@@ -454,11 +467,11 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
         }
     }
 
-    /*private void toggleConvenienceStoreMarkers(boolean show) {
+    private void toggleConvenienceStoreMarkers(boolean show) {
         if (show) {
             for (ConvenienceStore convenienceStore : convenienceStoreList) {
                 Marker marker = googleMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(convenienceStore.g(), convenienceStore.getLongitude()))
+                        .position(new LatLng(convenienceStore.getLatitude(), convenienceStore.getLongitude()))
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
                         .title("편의점"));
                 convenienceStoreMarkers.add(marker);
@@ -469,7 +482,7 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
             }
             convenienceStoreMarkers.clear();
         }
-    }*/
+    }
 
     @Override
     protected void onResume() {
