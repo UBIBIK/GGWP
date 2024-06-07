@@ -6,10 +6,14 @@ import com.example.guardiango.entity.LocationData;
 import com.example.guardiango.entity.UserDTO;
 import com.example.guardiango.entity.UserInfo;
 
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 
 public interface UserRetrofitInterface {
     @POST("save-user")
@@ -38,4 +42,10 @@ public interface UserRetrofitInterface {
 
     @POST("get-element")
     Call<Element> getElementData();
+
+    @Multipart
+    @POST("upload-postdata")
+    Call<ResponseBody> uploadPostData(
+            @Part MultipartBody.Part image,
+            @Part("postData") RequestBody postData);
 }

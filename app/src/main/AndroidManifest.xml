@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
     <application
         android:usesCleartextTraffic="true"
         android:allowBackup="true"
@@ -10,8 +13,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.GuardianGo"
-        tools:targetApi="31">
+        android:theme="@style/Theme.GuardianGo">
 
         <activity
             android:name=".screen.MainActivity"
@@ -40,6 +42,10 @@
 
         <activity android:name=".screen.SirenRecord"></activity>
 
+        <activity android:name=".screen.report"></activity>
+
+        <activity android:name=".screen.select_report"></activity>
+
         <!--구글맵 부분-->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -51,12 +57,20 @@
         </activity>
     </application>
 
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- 위치 권한 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <!-- 인터넷 권한 -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- 오디오 권한 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- 저장소 권한 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <!-- 카메라 권한 -->
+    <uses-permission android:name="android.permission.CAMERA" />
 </manifest>
