@@ -7,20 +7,29 @@ import ggwp.server.guardiango.repository.UserReportRepository;
 import ggwp.server.guardiango.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @RestController
 public class AndroidController {
+
+    @Value("${server.host}")
+    private String serverHost;
+
+    @Value("${server.port}")
+    private int serverPort;
 
     private final UserRepository userRepository;
     private final GroupRepository groupRepository;
@@ -203,5 +212,51 @@ public class AndroidController {
     @PostMapping("/get-userReport")
     public ResponseEntity<UserReport> getGroupReports(@RequestBody UserInfo user) throws Exception {
         return ResponseEntity.ok(userReportRepository.getUserReportByGroupKey(user));
+    }
+
+    // PostData 엔드포인트
+    @PostMapping("/upload-postdata")
+    public ResponseEntity<?> uploadPostData(
+            @RequestPart("image") MultipartFile imageFile,
+            @RequestPart("postData") PostData postData) {
+
+        UserInfo userInfo = postData.getUserInfo();
+        String groupKey = userInfo.getGroupKey(); // Assuming UserInfo has getGroupKey() method
+        if (groupKey == null || groupKey.isEmpty()) {
+            return ResponseEntity.badRequest().body("Group key is missing");
+        }
+
+        // 이미지 파일 저장 로직
+        String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+        String uploadDir = "uploads/" + groupKey + "/";
+        File uploadDirectory = new File(uploadDir);
+
+        // 디렉토리가 존재하지 않으면 생성
+        if (!uploadDirectory.exists()) {
+            uploadDirectory.mkdirs();
+        }
+
+        File file = new File(uploadDir + fileName);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(imageFile.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // 이미지 URL 생성
+        String UUID = serverHost + ":" + serverPort + "/" + uploadDir + fileName;
+        postData.setUUID(UUID);
+
+        // 로그로 데이터 확인
+        log.info("Post content: {}", postData.getPostContent());
+        log.info("User info - Email: {}, Name: {}, Phone: {}", userInfo.getUserEmail(), userInfo.getUserName(), userInfo.getPhoneNumber());
+        log.info("Image URL: {}", postData.getUUID());
+        log.info("Location - Latitude: {}, Longitude: {}", postData.getLatitude(), postData.getLongitude());
+
+        // 로그로 데이터가 성공적으로 수신되었음을 확인
+        log.info("Data successfully received from client.");
+
+        // 클라이언트로 응답
+        return ResponseEntity.ok("Post data uploaded successfully");
     }
 }

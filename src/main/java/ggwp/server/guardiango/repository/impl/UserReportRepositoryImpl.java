@@ -26,7 +26,7 @@ public class UserReportRepositoryImpl implements UserReportRepository {
         ApiFuture<DocumentSnapshot> futureSnapshot = docRef.get();
         DocumentSnapshot documentSnapshot = futureSnapshot.get();
 
-        if(documentSnapshot.exists()) {
+        if (documentSnapshot.exists()) {
             // 동일한 그룹키를 가진 사용자 신고 목록이 있으면 예외
             throw new IllegalArgumentException("동일한 그룹키를 가진 사용자 신고 목록이 존재합니다.");
         }
@@ -51,9 +51,9 @@ public class UserReportRepositoryImpl implements UserReportRepository {
         // 문서 결과를 가져옴
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
 
-        if(!documents.isEmpty()) {
+        if (!documents.isEmpty()) {
             // 첫 번째 문서를 가져옴
-            QueryDocumentSnapshot document = documents.getFirst();
+            QueryDocumentSnapshot document = documents.get(0);
 
             // 문서를 객체로 변환
             UserReport userReport = document.toObject(UserReport.class);
