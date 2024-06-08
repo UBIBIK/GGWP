@@ -3,6 +3,7 @@ package ggwp.server.guardiango.repository.impl;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
+import com.google.firebase.database.core.Repo;
 import ggwp.server.guardiango.entity.*;
 import ggwp.server.guardiango.repository.UserReportRepository;
 import org.springframework.stereotype.Service;
@@ -41,24 +42,24 @@ public class UserReportRepositoryImpl implements UserReportRepository {
     }
 
     @Override
-    public UserReport addReport(Report report, UserInfo user) throws Exception {
+    public UserReport addReport(PostData postData) throws Exception {
         // Firestore에서 그룹 컬렉션을 참조
         CollectionReference userReportCollection = firestore.collection(COLLECTION_NAME);
 
         // 그룹 키로 그룹 문서를 조회
-        ApiFuture<QuerySnapshot> future = userReportCollection.whereEqualTo("groupKey", user.getGroupKey()).get();
+        ApiFuture<QuerySnapshot> future = userReportCollection.whereEqualTo("groupKey", postData.getUserInfo().getGroupKey()).get();
 
         // 문서 결과를 가져옴
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
 
         if (!documents.isEmpty()) {
+            Report report = new Report(postData.getUserInfo().getUserName(), postData.getLatitude(), postData.getLongitude(), postData.getUUID(), postData.getPostContent());
+
             // 첫 번째 문서를 가져옴
-            QueryDocumentSnapshot document = documents.get(0);
+            QueryDocumentSnapshot document = documents.getFirst();
 
             // 문서를 객체로 변환
             UserReport userReport = document.toObject(UserReport.class);
-
-            report.setReporterName(user.getUserName());
 
             // 신고 목록에 새로운 신고 정보를 추가
             userReport.getReport().add(report);
@@ -84,9 +85,9 @@ public class UserReportRepositoryImpl implements UserReportRepository {
     }
 
     @Override
-    public UserReport deleteReport(Report report, UserInfo user) throws Exception {
+    public UserReport deleteReport(PostData postData) throws Exception {
         // 신고 목록이 존재하는지 확인
-        Query UserReportQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", user.getGroupKey());
+        Query UserReportQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", postData.getUserInfo().getGroupKey());
         ApiFuture<QuerySnapshot> querySnapshot = UserReportQuery.get();
 
         // 신고 목록이 존재하지 않으면 예외처리
@@ -104,12 +105,12 @@ public class UserReportRepositoryImpl implements UserReportRepository {
             // 문서를 객체로 변환
             UserReport userReport = document.toObject(UserReport.class);
 
-            ArrayList<Report> reports = userReport.getReport();
+            List<Report> reports = userReport.getReport();
 
             // 위도와 경도가 일치하는 요소를 찾아 삭제
             boolean isRemoved = reports.removeIf(findReport ->
-                    findReport.getLatitude() == report.getLatitude() &&
-                            findReport.getLongitude() == report.getLongitude()
+                    findReport.getLatitude() == postData.getLatitude() &&
+                            findReport.getLongitude() == postData.getLongitude()
             );
 
             if(isRemoved) {
@@ -143,23 +144,28 @@ public class UserReportRepositoryImpl implements UserReportRepository {
                 }
             }
         }
-        throw new Exception("해당 그룹이 존재하지 않습니다.");
+        throw new Exception("해당 사용자 신고 목록이 존재하지 않습니다.");
     }
 
     @Override
-    public UserReport getUserReportByGroupKey(UserInfo user) throws Exception {
+    public List<Report> getUserReport(UserInfo user) throws Exception {
+        List<Report> list = new ArrayList<>();
         ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", user.getGroupKey()).get();
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-        if(!documents.isEmpty()){
-            return documents.getFirst().toObject(UserReport.class);
+        QueryDocumentSnapshot document = documents.getFirst();
+
+        if (documents.isEmpty()) {
+            throw new Exception("해당 사용자 신고는 존재하지 않습니다.");
         }
-        throw new Exception("해당 그룹은 존재하지 않습니다.");
+
+        return document.toObject(UserReport.class).getReport();
     }
 
+
     @Override
-    public Report getReportByLocation(LocationData reportLocation, UserInfo user) throws Exception {
+    public Report getReportByLocation(PostData postData) throws Exception {
         // 신고 목록이 존재하는지 확인
-        Query UserReportQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", user.getGroupKey());
+        Query UserReportQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupKey", postData.getUserInfo().getGroupKey());
         ApiFuture<QuerySnapshot> querySnapshot = UserReportQuery.get();
 
         // 그룹키에 해당하는 신고 목록이 존재하지 않으면 예외처리
@@ -175,11 +181,11 @@ public class UserReportRepositoryImpl implements UserReportRepository {
             QueryDocumentSnapshot document = documents.getFirst();
 
             // 문서를 report 객체로 변환
-            ArrayList<Report> reports = document.toObject(UserReport.class).getReport();
+            List<Report> reports = document.toObject(UserReport.class).getReport();
             for (Report report : reports) {
                 // 위도와 경도가 일치하는 객체 반환
-                if (report.getLatitude() == reportLocation.getLatitude()
-                        && report.getLongitude() == reportLocation.getLongitude()) {
+                if (report.getLatitude() == postData.getLatitude()
+                        && report.getLongitude() == postData.getLongitude()) {
                     return report;
                 }
             }

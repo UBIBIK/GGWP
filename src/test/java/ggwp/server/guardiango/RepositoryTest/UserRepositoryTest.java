@@ -1,4 +1,4 @@
-package ggwp.server.guardiango.ServiceTest;
+package ggwp.server.guardiango.RepositoryTest;
 
 import ggwp.server.guardiango.entity.User;
 import ggwp.server.guardiango.repository.UserRepository;

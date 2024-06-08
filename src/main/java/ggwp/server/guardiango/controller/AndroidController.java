@@ -94,7 +94,6 @@ public class AndroidController {
                 user.setGroupKey(userinfo.getGroupKey());
                 userRepository.updateUser(user); // user 컬렉션에 해당 groupKey 정보 업데이트
                 groupRepository.updateLocationInfo(userinfo);
-                userReportRepository.insertUserReport(userinfo);
                 userReportRepository.insertUserReport(userinfo); // 사용자 신고 목록 생성
                 return ResponseEntity.ok(tempGroup);
             }
@@ -184,41 +183,29 @@ public class AndroidController {
         return ResponseEntity.ok(groupRepository.updateLocationInfo(user));
     }
 
-    // 요소 정보 조회
+    // 안전 요소 정보 조회
     @PostMapping("/get-element")
-    public ResponseEntity<Element> getElement() throws Exception {
-        return ResponseEntity.ok(elementRepository.getElement());
+    public ResponseEntity<Element> getElement(@RequestBody UserInfo user) throws Exception { // 그룹 사용자 신고 요소 조회를 위해 UserInfo 필요
+        return ResponseEntity.ok(elementRepository.getElement(user));
     }
 
-    // 사용자 신고 저장
-    @PostMapping("/add-userReport")
-    public ResponseEntity<UserReport> addUserReport(@RequestBody Report report, UserInfo user) throws Exception {
-        return ResponseEntity.ok(userReportRepository.addReport(report, user));
-    }
-
-    // 사용자 신고 삭제
+    // 단일 사용자 신고 삭제 후 해당 사용자 신로 목록 반환
     @PostMapping("/report-delete")
-    public ResponseEntity<UserReport> reportDelete(@RequestBody Report report, UserInfo user) throws Exception {
-        return ResponseEntity.ok(userReportRepository.deleteReport(report, user));
+    public ResponseEntity<UserReport> reportDelete(@RequestPart("postData") PostData postData) throws Exception {
+        return ResponseEntity.ok(userReportRepository.deleteReport(postData));
     }
 
-    // 단일 신고 정보 조회
+    // 단일 사용자 신고 정보 조회
     @PostMapping("/get-report")
-    public ResponseEntity<Report> getReport(@RequestBody LocationData reportLocation, UserInfo user) throws Exception {
-        return ResponseEntity.ok(userReportRepository.getReportByLocation(reportLocation, user));
-    }
-
-    // 그룹 신고 정보 조회
-    @PostMapping("/get-userReport")
-    public ResponseEntity<UserReport> getGroupReports(@RequestBody UserInfo user) throws Exception {
-        return ResponseEntity.ok(userReportRepository.getUserReportByGroupKey(user));
+    public ResponseEntity<Report> getReport(@RequestPart("postData") PostData postData) throws Exception {
+        return ResponseEntity.ok(userReportRepository.getReportByLocation(postData));
     }
 
     // PostData 엔드포인트
     @PostMapping("/upload-postdata")
     public ResponseEntity<?> uploadPostData(
             @RequestPart("image") MultipartFile imageFile,
-            @RequestPart("postData") PostData postData) {
+            @RequestPart("postData") PostData postData) throws Exception {
 
         UserInfo userInfo = postData.getUserInfo();
         String groupKey = userInfo.getGroupKey(); // Assuming UserInfo has getGroupKey() method
@@ -255,6 +242,9 @@ public class AndroidController {
 
         // 로그로 데이터가 성공적으로 수신되었음을 확인
         log.info("Data successfully received from client.");
+
+        // 사용자 신고 정도 파이어베이스에 저장
+        userReportRepository.addReport(postData);
 
         // 클라이언트로 응답
         return ResponseEntity.ok("Post data uploaded successfully");

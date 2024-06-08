@@ -17,4 +17,12 @@ public class PostData {
         this.postContent = postContent;
         this.UUID = imageUrl;
     }
+
+    public PostData(UserInfo testUserInfo, String postContent, String uuid, double latitude, double longitude) { // UserReportRepositoryTest를 위한 생성자
+        this.userInfo = testUserInfo;
+        this.postContent = postContent;
+        this.UUID = uuid;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
 }

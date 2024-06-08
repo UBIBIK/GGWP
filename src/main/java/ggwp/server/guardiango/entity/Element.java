@@ -9,9 +9,12 @@ import java.util.List;
 @Setter
 @Getter
 public class Element {
-    List<CCTV> cctvs = new ArrayList<>();
-    List<SchoolZone> schoolZones = new ArrayList<>();
-    List<Crime> crimes = new ArrayList<>();
-    List<EmergencyBell> emergencyBells = new ArrayList<>();
-    List<ConvenienceStore> convenienceStores = new ArrayList<>();
+    private List<CCTV> cctvs = new ArrayList<>();
+    private List<SchoolZone> schoolZones = new ArrayList<>();
+    private List<Crime> crimes = new ArrayList<>();
+    private List<EmergencyBell> emergencyBells = new ArrayList<>();
+    private List<ConvenienceStore> convenienceStores = new ArrayList<>();
+    private List<Report> reports = new ArrayList<>();
+
+    public Element() {}
 }

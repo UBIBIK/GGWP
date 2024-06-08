@@ -5,13 +5,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
 public class UserReport {
     private String reportName;
     private String groupKey;
-    private ArrayList<Report> report = new ArrayList<>();
+    private List<Report> report = new ArrayList<>();
 
     public UserReport() {} // UserReportService를 위한 기본 생성자
     

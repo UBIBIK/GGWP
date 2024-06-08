@@ -1,4 +1,4 @@
-package ggwp.server.guardiango.ServiceTest;
+package ggwp.server.guardiango.RepositoryTest;
 
 import ggwp.server.guardiango.entity.Crime;
 import ggwp.server.guardiango.repository.CrimeRepository;
@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 @SpringBootTest
-public class CrimeSerivceTest {
+public class CrimeRepositoryTest {
     @Autowired
     private CrimeRepository crimeRepository;
     @Test
