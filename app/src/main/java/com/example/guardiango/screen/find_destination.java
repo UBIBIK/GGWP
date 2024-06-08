@@ -251,6 +251,7 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
 
     private void fetchElementData() {
         UserRetrofitInterface apiService = RetrofitClient.getUserRetrofitInterface();
+        sharedPreferencesHelper = new SharedPreferencesHelper(this);
         UserInfo user = sharedPreferencesHelper.getUserInfo();
         Call<Element> call = apiService.getElementData(user);
         call.enqueue(new Callback<Element>() {
