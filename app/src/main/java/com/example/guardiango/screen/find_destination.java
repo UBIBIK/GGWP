@@ -22,7 +22,10 @@ import com.example.guardiango.entity.ConvenienceStore;
 import com.example.guardiango.entity.Crime;
 import com.example.guardiango.entity.Element;
 import com.example.guardiango.entity.EmergencyBell;
+import com.example.guardiango.entity.Report;
 import com.example.guardiango.entity.SchoolZone;
+import com.example.guardiango.entity.SharedPreferencesHelper;
+import com.example.guardiango.entity.UserInfo;
 import com.example.guardiango.server.RetrofitClient;
 import com.example.guardiango.server.UserRetrofitInterface;
 import com.google.android.gms.maps.GoogleMap;
@@ -59,7 +62,7 @@ import org.json.JSONObject;
 import java.io.InputStream;
 
 public class find_destination extends AppCompatActivity implements OnMapReadyCallback, SwitchAdapter.OnSwitchCheckedChangeListener {
-
+    private SharedPreferencesHelper sharedPreferencesHelper;
     private MapView mapView;
     private GoogleMap googleMap;
     private double latitude;
@@ -75,14 +78,15 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
     private final List<Marker> schoolZoneMarkers = new ArrayList<>();
     private final List<Marker> crimeAreaMarkers = new ArrayList<>();
     private final List<Marker> emergencyBellMarkers = new ArrayList<>();
-
     private final List<Marker> convenienceStoreMarkers = new ArrayList<>();
+    private final List<Marker> reportMarkers = new ArrayList<>();
     private static final String API_KEY = "Qo2Dzd0MGI2AyknkLTB8U6jqfAz5UwUA3gaqwxjj";
     private List<CCTV> cctvList = new ArrayList<>();
     private List<SchoolZone> schoolZoneList  = new ArrayList<>();
     private List<Crime> crimeList  = new ArrayList<>();
     private List<EmergencyBell> emergencyBellList  = new ArrayList<>();
-    private List<ConvenienceStore> convenienceStoreList   = new ArrayList<>();
+    private List<ConvenienceStore> convenienceStoreList = new ArrayList<>();
+    private List<Report> reportList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -247,7 +251,8 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
 
     private void fetchElementData() {
         UserRetrofitInterface apiService = RetrofitClient.getUserRetrofitInterface();
-        Call<Element> call = apiService.getElementData();
+        UserInfo user = sharedPreferencesHelper.getUserInfo();
+        Call<Element> call = apiService.getElementData(user);
         call.enqueue(new Callback<Element>() {
             @Override
             public void onResponse(Call<Element> call, Response<Element> response) {
@@ -258,6 +263,7 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
                     crimeList = element.getCrimes();
                     emergencyBellList = element.getEmergencyBells();
                     convenienceStoreList = element.getConvenienceStores();
+                    reportList = element.getReports();
                     Toast.makeText(find_destination.this, "데이터 가져오기 성공", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(find_destination.this, "데이터 가져오기 실패", Toast.LENGTH_SHORT).show();
@@ -280,6 +286,7 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
         switchItems.add(new SwitchItem("범죄자 거주지", false));
         switchItems.add(new SwitchItem("비상벨", false));
         switchItems.add(new SwitchItem("편의점", false));
+        switchItems.add(new SwitchItem("사용자 신고", false));
         return switchItems;
     }
 
@@ -300,6 +307,9 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
                 break;
             case 4:
                 toggleConvenienceStoreMarkers(isChecked);
+                break;
+            case 5:
+                toggleReportMarkers(isChecked);
                 break;
         }
     }
@@ -492,6 +502,27 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
             convenienceStoreMarkers.clear();
         }
     }
+
+    // 사용자 신고 마커 토글
+    private void toggleReportMarkers(boolean show) {
+        if (show) {
+            for (Report report : reportList) {
+                Log.d("UserReportLatitude : ", String.valueOf(report.getLatitude()));
+                Log.d("UserReportLongitude : ", String.valueOf(report.getLongitude()));
+                Marker marker = googleMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(report.getLatitude(), report.getLongitude()))
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET))
+                        .title(report.getReporterName() + "의 사용자 신고"));
+                reportMarkers.add(marker);
+            }
+        } else {
+            for (Marker marker : reportMarkers) {
+                marker.remove();
+            }
+            reportMarkers.clear();
+        }
+    }
+
 
     @Override
     protected void onResume() {

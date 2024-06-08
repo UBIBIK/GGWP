@@ -9,6 +9,7 @@ public class Element {
     List<Crime> crimes = new ArrayList<>();
     List<EmergencyBell> emergencyBells = new ArrayList<>();
     List<ConvenienceStore> convenienceStores = new ArrayList<>();
+    List<Report> reports = new ArrayList<>();
 
     public List<CCTV> getCctvs() {
         return cctvs;
@@ -48,5 +49,13 @@ public class Element {
 
     public void setConvenienceStores(List<ConvenienceStore> convenienceStores) {
         this.convenienceStores = convenienceStores;
+    }
+
+    public List<Report> getReports() {
+        return reports;
+    }
+
+    public void setReports(List<Report> reports) {
+        this.reports = reports;
     }
 }

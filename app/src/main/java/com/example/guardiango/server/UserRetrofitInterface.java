@@ -2,9 +2,10 @@ package com.example.guardiango.server;
 
 import com.example.guardiango.entity.Element;
 import com.example.guardiango.entity.Group;
-import com.example.guardiango.entity.LocationData;
+import com.example.guardiango.entity.Report;
 import com.example.guardiango.entity.UserDTO;
 import com.example.guardiango.entity.UserInfo;
+import com.example.guardiango.entity.UserReport;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -41,7 +42,13 @@ public interface UserRetrofitInterface {
     Call<Group> updateLocation(@Body UserInfo user);
 
     @POST("get-element")
-    Call<Element> getElementData();
+    Call<Element> getElementData(@Body UserInfo user);
+
+    @POST("report-delete") // 단일 사용자 신고 정보 삭제
+    Call<UserReport> reportDelete(@Part("postData") RequestBody postData);
+
+    @POST("get-report") // 단일 사용자 신고 정보 조회
+    Call<Report> getReport(@Part("postData") RequestBody postData);
 
     @Multipart
     @POST("upload-postdata")
