@@ -487,11 +487,11 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
 
     //위치 전송
     private void sendLocationToServer() {
-        //그룹 정보 가져오기
+        // 그룹 정보 가져오기
         sharedPreferencesGroup = new SharedPreferencesGroup(this);
 
-        //사용자 정보 가져와서 위치 정보 삽입
-        SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(this);
+        // 사용자 정보 가져와서 위치 정보 삽입
+        sharedPreferencesHelper = new SharedPreferencesHelper(this); // 여기에 할당 추가
         UserInfo user = sharedPreferencesHelper.getUserInfo();
         LocationData currentLocation = locationService.getCurrentLocationData();
 
@@ -501,6 +501,12 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
         if (user != null) {
             // 서버에 위치 정보 전송
             UserRetrofitInterface apiService = RetrofitClient.getUserRetrofitInterface();
+            if (apiService == null) {
+                Log.e(TAG, "Retrofit API service is null");
+                Toast.makeText(getApplicationContext(), "Retrofit API 서비스 초기화 실패", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             Call<Group> call = apiService.updateLocation(user);
             call.enqueue(new Callback<Group>() {
                 @Override
@@ -524,6 +530,7 @@ public class your_new_home extends AppCompatActivity implements OnMapReadyCallba
             Toast.makeText(getApplicationContext(), "위치 정보 없음", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     //로그아웃
     private void logout() {

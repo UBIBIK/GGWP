@@ -7,6 +7,10 @@ public class PostData {
     private double latitude;
     private double longitude;
 
+    public PostData() {
+        // 기본 생성자 필요
+    }
+
     public PostData(UserInfo userInfo, String postContent, String UUID) {
         this.userInfo = userInfo;
         this.postContent = postContent;
@@ -22,7 +26,7 @@ public class PostData {
     }
 
     public String getPostContent() {
-        return postContent;
+        return this.postContent;
     }
 
     public void setPostContent(String postContent) {

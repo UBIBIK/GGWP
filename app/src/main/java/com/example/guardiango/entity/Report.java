@@ -6,7 +6,7 @@ public class Report {
     private String reporterName; // 신고자 이름
     private double latitude; // 위도
     private double longitude; // 경도
-    private String UUID; // 파이어베이스 스토리지 이미지
+    private String uuid; // 파이어베이스 스토리지 이미지
     private Date time; // 신고 시간
     private String content; // 신고 설명
 
@@ -15,7 +15,7 @@ public class Report {
     public Report(double latitude, double longitude, String UUID) { // UserReportTest를 위한 생성자
         this.latitude = latitude;
         this.longitude = longitude;
-        this.UUID = UUID;
+        this.uuid = UUID;
         // 현재 시간을 타임스탬프로 추가
         this.time = new Date();
     }
@@ -23,10 +23,11 @@ public class Report {
     public Report(double latitude, double longitude, String UUID, String description) { // UserReportTest를 위한 생성자
         this.latitude = latitude;
         this.longitude = longitude;
-        this.UUID = UUID;
+        this.uuid = UUID;
         this.time = new Date();
         this.content = description;
     }
+
 
     public String getReporterName() {
         return reporterName;
@@ -53,11 +54,11 @@ public class Report {
     }
 
     public String getUUID() {
-        return UUID;
+        return uuid;
     }
 
     public void setUUID(String UUID) {
-        this.UUID = UUID;
+        this.uuid = UUID;
     }
 
     public Date getTime() {

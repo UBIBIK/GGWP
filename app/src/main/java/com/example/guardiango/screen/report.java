@@ -123,7 +123,6 @@ public class report extends AppCompatActivity {
         String postText = editTextPost.getText().toString();
 
         if (bitmap != null) {
-            // Convert bitmap to file
             File file = new File(getCacheDir(), "image.jpg");
             try (FileOutputStream fos = new FileOutputStream(file)) {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
@@ -133,18 +132,16 @@ public class report extends AppCompatActivity {
                 return;
             }
 
-            // Create RequestBody instance from file
             RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
             MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestFile);
 
-            // Create RequestBody for postData
             UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
             PostData postData = new PostData(userInfo, postText, null);
             postData.setLatitude(latitude);
             postData.setLongitude(longitude);
-            RequestBody postDataBody = RequestBody.create(MediaType.parse("application/json"), new Gson().toJson(postData));
+            String postDataJson = new Gson().toJson(postData);
+            RequestBody postDataBody = RequestBody.create(MediaType.parse("application/json"), postDataJson);
 
-            // Make the network request
             UserRetrofitInterface apiService = RetrofitClient.getInstance().getUserRetrofitInterface();
             Call<ResponseBody> call = apiService.uploadPostData(body, postDataBody);
             call.enqueue(new Callback<ResponseBody>() {

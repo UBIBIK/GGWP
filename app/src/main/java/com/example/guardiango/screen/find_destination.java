@@ -1,6 +1,8 @@
 package com.example.guardiango.screen;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,6 +11,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.app.AlertDialog;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -53,6 +58,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -82,9 +88,9 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
     private final List<Marker> reportMarkers = new ArrayList<>();
     private static final String API_KEY = "Qo2Dzd0MGI2AyknkLTB8U6jqfAz5UwUA3gaqwxjj";
     private List<CCTV> cctvList = new ArrayList<>();
-    private List<SchoolZone> schoolZoneList  = new ArrayList<>();
-    private List<Crime> crimeList  = new ArrayList<>();
-    private List<EmergencyBell> emergencyBellList  = new ArrayList<>();
+    private List<SchoolZone> schoolZoneList = new ArrayList<>();
+    private List<Crime> crimeList = new ArrayList<>();
+    private List<EmergencyBell> emergencyBellList = new ArrayList<>();
     private List<ConvenienceStore> convenienceStoreList = new ArrayList<>();
     private List<Report> reportList = new ArrayList<>();
 
@@ -133,12 +139,7 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
         fetchElementData(); // 화면이 실행될 때 데이터 가져오기
 
         Button back = findViewById(R.id.backButton);
-        back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        back.setOnClickListener(v -> finish());
     }
 
     @Override
@@ -167,6 +168,16 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
                 waypoints.add(latLng);
                 fetchRoute(new LatLng(latitude, longitude), destinationMarker.getPosition(), waypoints);
             }
+        });
+
+        // 마커 클릭 이벤트 처리 코드 추가
+        googleMap.setOnMarkerClickListener(marker -> {
+            if (marker.getTitle().endsWith("의 사용자 신고")) {
+                // 사용자 신고 마커일 경우 팝업 창을 띄웁니다.
+                showReportPopup(marker);
+                return true; // 클릭 이벤트 소비
+            }
+            return false; // 클릭 이벤트 소비하지 않음
         });
 
         // GeoJSON 파일을 비동기적으로 로드하여 지도에 표시
@@ -243,11 +254,7 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
 
             return Color.argb(alpha, red, green, blue);
         }
-
     }
-
-
-
 
     private void fetchElementData() {
         UserRetrofitInterface apiService = RetrofitClient.getUserRetrofitInterface();
@@ -265,6 +272,18 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
                     emergencyBellList = element.getEmergencyBells();
                     convenienceStoreList = element.getConvenienceStores();
                     reportList = element.getReports();
+
+                    // UUID 값을 확인하고 로그로 출력
+                    for (Report report : reportList) {
+                        Log.d("fetchElementData", "Report 정보:");
+                        Log.d("fetchElementData", "UUID: " + report.getUUID());
+                        Log.d("fetchElementData", "Content: " + report.getContent());
+                        Log.d("fetchElementData", "Latitude: " + report.getLatitude());
+                        Log.d("fetchElementData", "Longitude: " + report.getLongitude());
+                        Log.d("fetchElementData", "ReporterName: " + report.getReporterName());
+                        Log.d("fetchElementData", "Time: " + report.getTime());
+                    }
+
                     Toast.makeText(find_destination.this, "데이터 가져오기 성공", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(find_destination.this, "데이터 가져오기 실패", Toast.LENGTH_SHORT).show();
@@ -277,8 +296,6 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
             }
         });
     }
-
-
 
     private List<SwitchItem> getSwitchItems() {
         List<SwitchItem> switchItems = new ArrayList<>();
@@ -514,6 +531,7 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
                         .position(new LatLng(report.getLatitude(), report.getLongitude()))
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET))
                         .title(report.getReporterName() + "의 사용자 신고"));
+                marker.setTag(report);
                 reportMarkers.add(marker);
             }
         } else {
@@ -524,6 +542,90 @@ public class find_destination extends AppCompatActivity implements OnMapReadyCal
         }
     }
 
+
+    private void showReportPopup(Marker marker) {
+        UserInfo user = sharedPreferencesHelper.getUserInfo();
+        Log.d("showReportPopup", "Marker clicked: " + marker.getTitle());
+
+        Report report = (Report) marker.getTag();
+        if (report == null) {
+            Log.e("showReportPopup", "Report 데이터가 없습니다.");
+            Toast.makeText(this, "Report 데이터가 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String uuid = report.getUUID();
+        String groupKey = user.getGroupKey();
+        if (uuid == null || groupKey == null) {
+            Log.e("showReportPopup", "UUID 또는 GroupKey가 null입니다.");
+            Toast.makeText(this, "UUID 또는 GroupKey가 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(report.getReporterName() + "의 사용자 신고");
+
+        // 팝업 창 레이아웃을 설정합니다.
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        ImageView imageView = new ImageView(this);
+        layout.addView(imageView);
+
+        TextView textView = new TextView(this);
+        textView.setText(report.getContent());
+        layout.addView(textView);
+
+        builder.setView(layout);
+        builder.setNegativeButton("닫기", (dialog, which) -> dialog.dismiss());
+        AlertDialog dialog = builder.create();
+
+        // UUID와 그룹키를 이용하여 서버에서 이미지를 가져와서 imageView에 표시합니다.
+        fetchImageFromServer(groupKey, uuid, imageView);
+
+        dialog.show();
+    }
+
+    private Report findReportByUUID(String uuid) {
+        for (Report report : reportList) {
+            if (report.getUUID().equals(uuid)) {
+                return report;
+            }
+        }
+        return null;
+    }
+
+    private void fetchImageFromServer(String groupKey, String uuid, ImageView imageView) {
+        Log.d("fetchImageFromServer", "Fetching image with GroupKey: " + groupKey + " and UUID: " + uuid);
+
+        if (uuid == null || groupKey == null) {
+            Log.e("fetchImageFromServer", "UUID or GroupKey is null, cannot fetch image.");
+            return;
+        }
+
+        UserRetrofitInterface apiService = RetrofitClient.getUserRetrofitInterface();
+        Call<ResponseBody> call = apiService.getImage(groupKey, uuid);
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Log.d("fetchImageFromServer", "Image fetched successfully");
+                    Bitmap bitmap = BitmapFactory.decodeStream(response.body().byteStream());
+                    imageView.setImageBitmap(bitmap);
+                } else {
+                    Log.e("fetchImageFromServer", "이미지를 불러오는 데 실패했습니다. Response code: " + response.code());
+                    Toast.makeText(find_destination.this, "이미지를 불러오는 데 실패했습니다.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("fetchImageFromServer", "서버 요청 실패: " + t.getMessage(), t);
+                Toast.makeText(find_destination.this, "서버 요청 실패: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
     @Override
     protected void onResume() {

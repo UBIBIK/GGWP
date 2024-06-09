@@ -1,5 +1,6 @@
 package com.example.guardiango.server;
 
+import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
@@ -11,10 +12,10 @@ public class RetrofitClient {
     private static String baseUrl = "http://34.64.241.204:8080/";
 
     //로컬 호스트
-//    private static String baseUrl = "http://10.0.2.2:8080/";
+    //private static String baseUrl = "http://10.0.2.2:8080/";
 
     private RetrofitClient() {
-        retrofit2.Retrofit retrofit = new retrofit2.Retrofit.Builder()
+        Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
@@ -29,6 +30,9 @@ public class RetrofitClient {
     }
 
     public static UserRetrofitInterface getUserRetrofitInterface() {
+        if (userRetrofitInterface == null) {
+            getInstance(); // 인스턴스를 초기화
+        }
         return userRetrofitInterface;
     }
 }
