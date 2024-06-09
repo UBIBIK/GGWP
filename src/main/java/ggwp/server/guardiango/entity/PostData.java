@@ -12,17 +12,21 @@ public class PostData {
     private double latitude;
     private double longitude;
 
-    public PostData(UserInfo userInfo, String postContent, String imageUrl) {
-        this.userInfo = userInfo;
-        this.postContent = postContent;
-        this.UUID = imageUrl;
+    public PostData() {
+
     }
 
-    public PostData(UserInfo testUserInfo, String postContent, String uuid, double latitude, double longitude) { // UserReportRepositoryTest를 위한 생성자
+    public PostData(UserInfo userInfo, String postContent, String UUID) {
+        this.userInfo = userInfo;
+        this.postContent = postContent;
+        this.UUID = UUID;
+    }
+
+    /*public PostData(UserInfo testUserInfo, String postContent, String uuid, double latitude, double longitude) {
         this.userInfo = testUserInfo;
         this.postContent = postContent;
         this.UUID = uuid;
         this.latitude = latitude;
         this.longitude = longitude;
-    }
+    }*/
 }
